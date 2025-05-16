@@ -67,25 +67,20 @@ public partial class Chunk : Node3D
     }
     public void Simulate()
     {
+       
         (_activeCells, _nextActiveCells) = (_nextActiveCells, _activeCells);
         _nextActiveCells.Clear();
-        for (int x = 0; x < Size; x++)
-            for (int y = 0; y < Size; y++)
-                for (int z = 0; z < Size; z++)
-                {
-                    if (_cellsStatic[x, y, z].IsAir)
-                        _cellsNext[x, y, z] = DefaultCells.Air;
-                    else
-                        _cellsNext[x, y, z] = _cellsStatic[x, y, z];
-                }
-                    
+        _cellsNext = (Cell[,,])_cellsStatic.Clone();
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         foreach (var pos in _activeCells)
         {
             var cell = GetCell(pos);
             if (cell.IsAir) continue;
             _simulateDelegates[(int)cell.Type](this, pos);
         }
-        GD.Print("Активных клеток:",_activeCells.Count, ", в следующем кадре:" ,_nextActiveCells.Count, ", всего клеток:", _cells);
+        stopwatch.Stop();
+        GD.Print("Simulate time: ", stopwatch.ElapsedMilliseconds, "ms");
+        GD.Print("Активных клеток:", _activeCells.Count, ", в следующем кадре:", _nextActiveCells.Count, ", всего клеток:", _cells);
         (_cellsCurrent, _cellsNext) = (_cellsNext, _cellsCurrent);
         _visualBuffer.Clear();
         for (int x = 0; x < Size; x++)
@@ -100,6 +95,7 @@ public partial class Chunk : Node3D
         {
             (_visualInstances, _visualBuffer) = (_visualBuffer, _visualInstances);
         }
+
     }
     public void UpdateVisuals()
     {
@@ -119,41 +115,19 @@ public partial class Chunk : Node3D
     }
     public void ReservedCell(Vector3I pos)
     {
-        if (!IsInBounds(pos))
-        {
-            GD.Print($"Tried to reserved cell out of bounds: {pos}");
-            return;
-        }
-        Cell cell = GetCell(pos);
-        cell.Reserved = true;
-        _cellsCurrent[pos.X, pos.Y, pos.Z] = cell;
+        _cellsCurrent[pos.X, pos.Y, pos.Z].Reserved = true;
     }
     public void DeleteStaticCell(Vector3I pos)
     {
-        if (!IsInBounds(pos))
-        {
-            GD.Print($"Tried to set cell out of bounds: {pos}");
-            return;
-        }
         _cellsStatic[pos.X, pos.Y, pos.Z] = DefaultCells.Air;
     }
     public void SetStaticCell(Vector3I pos, Cell cell)
     {
-        if (!IsInBounds(pos))
-        {
-            GD.Print($"Tried to set static cell out of bounds: {pos}");
-            return;
-        }
         _cellsStatic[pos.X, pos.Y, pos.Z] = cell;
         _cellsNext[pos.X, pos.Y, pos.Z] = cell;
     }
     public void SetCell(Vector3I pos, Cell cell)
     {
-        if (!IsInBounds(pos))
-        {
-            GD.Print($"Tried to set cell out of bounds: {pos}");
-            return;
-        }
         _cellsNext[pos.X, pos.Y, pos.Z] = cell;
         if (CellBehaviorRegistry.IsActive(cell.Type))
             MarkActive(pos);
@@ -196,7 +170,6 @@ public partial class Chunk : Node3D
     {
         foreach (var offset in _neighborOffsets)
         {
-            if (!IsInBounds(pos + offset)) continue;
             MarkActive(pos + offset);
         }
     }
