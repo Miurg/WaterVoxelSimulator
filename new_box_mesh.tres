@@ -1,0 +1,20 @@
+[gd_resource type="BoxMesh" load_steps=5 format=3 uid="uid://o7buc8bd1puk"]
+
+[ext_resource type="Shader" uid="uid://ff3eypughfag" path="res://CellShader.gdshader" id="1_xywx5"]
+[ext_resource type="Shader" uid="uid://bj1jpb1odw283" path="res://Outline.gdshader" id="1_yhide"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gpja6"]
+render_priority = 0
+shader = ExtResource("1_yhide")
+shader_parameter/normal_threshold = 0.1
+shader_parameter/depth_threshold = 0.05
+shader_parameter/depth_artifact_correction_coef = 2.0
+shader_parameter/outline_color = Color(0, 0, 0, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_yhide"]
+render_priority = 0
+next_pass = SubResource("ShaderMaterial_gpja6")
+shader = ExtResource("1_xywx5")
+
+[resource]
+material = SubResource("ShaderMaterial_yhide")

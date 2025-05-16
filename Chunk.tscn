@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://bvx0miq23kv0c"]
+
+[ext_resource type="Script" uid="uid://d313t5xvpfq7w" path="res://Scripts/Chunk.cs" id="1_lexys"]
+[ext_resource type="BoxMesh" uid="uid://o7buc8bd1puk" path="res://new_box_mesh.tres" id="2_s3wkh"]
+
+[node name="Node3D" type="Node3D"]
+script = ExtResource("1_lexys")
+_cellMesh = ExtResource("2_s3wkh")
