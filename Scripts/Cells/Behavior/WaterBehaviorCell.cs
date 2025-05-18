@@ -1,18 +1,18 @@
 using Godot;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace VoxelParticleSimulator.Scripts.Cells.Behavior
 {
     internal class WaterBehaviorCell : BaseBehaviorCell
     {
-        private static readonly int[] DirectionIndices = [0, 1, 2, 3];
         private static readonly Vector3I[] OffsetDirections =
         [
             Vector3I.Right, Vector3I.Left,
             Vector3I.Forward, Vector3I.Back,
         ];
 
-        private static readonly RandomNumberGenerator rng = new();
 
         public override void Simulate(Chunk chunk, Vector3I pos)
         {
@@ -30,32 +30,30 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
                     return;
                 }
             }
-            int n = DirectionIndices.Length;
-            while (n > 1)
-            {
-                int k = rng.RandiRange(0, n - 1);
-                n--;
-                (DirectionIndices[n], DirectionIndices[k]) = (DirectionIndices[k], DirectionIndices[n]);
-            }
-            for (int i = 0; i < 4; i++)
-            {
-                var offset = OffsetDirections[DirectionIndices[i]];
-                var target = pos + offset;
-                if (chunk.IsInBounds(target))
-                {
-                    var targetCell = chunk.GetCell(target);
-                    if (targetCell.IsAir && !targetCell.Reserved)
-                    {
-                        chunk.MarkNeighborsActive(pos);
-                        chunk.SwapCells(pos, target);
-                        chunk.ReservedCell(target);
-                        chunk.DeleteStaticCell(pos);
-                        return;
-                    }
-                }
-            }
-            var cell = chunk.GetCell(pos);
-            chunk.SetStaticCell(pos, cell);
+            int startIndex = (int)(Stopwatch.GetTimestamp() & 0x3) + 1;
+            //in theory its better than cycle
+            if (TryMove(pos, OffsetDirections[(startIndex + 0) & 3], chunk)) return;
+            if (TryMove(pos, OffsetDirections[(startIndex + 1) & 3], chunk)) return;
+            if (TryMove(pos, OffsetDirections[(startIndex + 2) & 3], chunk)) return;
+            if (TryMove(pos, OffsetDirections[(startIndex + 3) & 3], chunk)) return;
+            chunk.SetStaticCell(pos, chunk.GetCell(pos));
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool TryMove(Vector3I pos, Vector3I offset, Chunk chunk)
+        {
+            var target = pos + offset;
+            if (!chunk.IsInBounds(target))
+                return false;
+
+            var targetCell = chunk.GetCell(target);
+            if (!targetCell.IsAir || targetCell.Reserved)
+                return false;
+
+            chunk.MarkNeighborsActive(pos);
+            chunk.SwapCells(pos, target);
+            chunk.ReservedCell(target);
+            chunk.DeleteStaticCell(pos);
+            return true;
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,22 +9,25 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
 {
     public static class CellBehaviorRegistry
     {
-        private static readonly HashSet<CellType> activeTypes = new()
+        private static readonly BaseBehaviorCell[] BehaviorArray;
+        static CellBehaviorRegistry()
         {
-            CellType.Sand,
-            CellType.Water
-        };
+            byte maxCellType = Enum.GetValues<CellType>().Cast<byte>().Max();
+            BehaviorArray = new BaseBehaviorCell[maxCellType + 1];
 
-        public static Dictionary<CellType, BaseBehaviorCell> Behaviors = new()
+            BehaviorArray[(int)CellType.Air] = new AirBehaviorCell();
+            BehaviorArray[(int)CellType.Water] = new WaterBehaviorCell();
+            BehaviorArray[(int)CellType.Sand] = new SandBehaviorCell();
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BaseBehaviorCell GetBehavior(CellType type)
         {
-            { CellType.Air, new AirBehaviorCell() },
-            { CellType.Sand, new SandBehaviorCell() },
-            { CellType.Water, new WaterBehaviorCell() }
-        };
-
+            return BehaviorArray[(int)type];
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsActive(CellType type)
         {
-            return activeTypes.Contains(type);
+            return type != CellType.Air;
         }
     }
 }

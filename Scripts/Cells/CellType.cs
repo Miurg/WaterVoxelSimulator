@@ -1,4 +1,4 @@
-public enum CellType
+public enum CellType : byte
 {
     Air,
     Sand,

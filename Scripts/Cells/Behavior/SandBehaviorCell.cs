@@ -4,8 +4,9 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
 {
     public class SandBehaviorCell : BaseBehaviorCell
     {
+        private static readonly int[] DirectionIndices = [0, 1, 2, 3];
         private static readonly Vector3I[] OffsetDirections =
-       [
+        [
            Vector3I.Right, Vector3I.Left,
             Vector3I.Forward, Vector3I.Back,
         ];
@@ -24,12 +25,16 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
                 chunk.ReservedCell(below);
                 return;
             }
-
-            var directions = OffsetDirections.ToArray();
-            directions.Shuffle(rng);
-
-            foreach (var offset in directions)
+            int n = DirectionIndices.Length;
+            while (n > 1)
             {
+                int k = rng.RandiRange(0, n - 1);
+                n--;
+                (DirectionIndices[n], DirectionIndices[k]) = (DirectionIndices[k], DirectionIndices[n]);
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                var offset = OffsetDirections[DirectionIndices[i]];
                 var target = pos + Vector3I.Down + offset;
                 if (chunk.IsInBounds(target) && (chunk.GetCell(target).IsAir || chunk.GetCell(target).Type == CellType.Water) && !chunk.GetCell(target).Reserved)
                 {

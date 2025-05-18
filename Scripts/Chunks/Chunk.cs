@@ -4,19 +4,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using VoxelParticleSimulator.Scripts.Cells;
 using VoxelParticleSimulator.Scripts.Cells.Behavior;
+using VoxelParticleSimulator.Scripts.Chunks;
 
 public partial class Chunk : Node3D
 {
     public const int Size = 64;
-    private Cell[,,] _cellsCurrent = new Cell[Size, Size, Size];
-    private Cell[,,] _cellsNext = new Cell[Size, Size, Size];
-    private Cell[,,] _cellsStatic = new Cell[Size, Size, Size];
-    private HashSet<Vector3I> _activeCells = new();
-    private HashSet<Vector3I> _nextActiveCells = new();
-    private List<(Vector3 Position, Color Color)> _visualInstances = new();
-    private List<(Vector3 Position, Color Color)> _visualBuffer = new();
+    private Cell[] _cellsCurrent = new Cell[Size * Size * Size];
+    private Cell[] _cellsNext = new Cell[Size * Size * Size];
+    private Cell[] _cellsStatic = new Cell[Size * Size * Size];
+    private ActiveCellsBuffer _activeCells;
+    private ActiveCellsBuffer _nextActiveCells;
+    private List<CellVisual> _visualInstances = new();
+    private List<CellVisual> _visualBuffer = new();
     private object _visualLock = new();
     private int _cells = 0;
 
@@ -24,7 +26,6 @@ public partial class Chunk : Node3D
     private MultiMesh _multimesh;
     [Export]
     private Mesh _cellMesh;
-    private Action<Chunk, Vector3I>[] _simulateDelegates;
 
 
     private static readonly Vector3I[] _neighborOffsets =
@@ -36,17 +37,13 @@ public partial class Chunk : Node3D
 
     public override void _Ready()
     {
+        _activeCells = new ActiveCellsBuffer(Size);
+        _nextActiveCells = new ActiveCellsBuffer(Size);
         InitializeMultimesh();
         for (int x = 0; x < Size; x++)
             for (int y = 0; y < Size; y++)
                 for (int z = 0; z < Size; z++)
-                    _cellsStatic[x, y, z] = DefaultCells.Air;
-        _simulateDelegates = new Action<Chunk, Vector3I>[Enum.GetValues<CellType>().Length];
-
-        foreach (CellType type in Enum.GetValues<CellType>())
-        {
-            _simulateDelegates[(int)type] = CellBehaviorRegistry.Behaviors[type].Simulate;
-        }
+                    _cellsStatic[ToIndex(new Vector3I(x, y, z))] = DefaultCells.Air;
         GD.Print("Chunk ready.");
     }
     private void InitializeMultimesh()
@@ -67,30 +64,33 @@ public partial class Chunk : Node3D
     }
     public void Simulate()
     {
-       
-        (_activeCells, _nextActiveCells) = (_nextActiveCells, _activeCells);
+
+        _activeCells.Swap(_nextActiveCells);
         _nextActiveCells.Clear();
-        _cellsNext = (Cell[,,])_cellsStatic.Clone();
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        foreach (var pos in _activeCells)
+        Array.Copy(_cellsStatic, _cellsNext, _cellsStatic.Length);
+        var stopwatchSimulation = System.Diagnostics.Stopwatch.StartNew();
+        foreach (var pos in _activeCells.GetActivePositions())
         {
             var cell = GetCell(pos);
             if (cell.IsAir) continue;
-            _simulateDelegates[(int)cell.Type](this, pos);
+            CellBehaviorRegistry.GetBehavior(cell.Type).Simulate(this, pos);
         }
-        stopwatch.Stop();
-        GD.Print("Simulate time: ", stopwatch.ElapsedMilliseconds, "ms");
-        GD.Print("Активных клеток:", _activeCells.Count, ", в следующем кадре:", _nextActiveCells.Count, ", всего клеток:", _cells);
+
+        stopwatchSimulation.Stop();
+        GD.Print("Simulate time all cells: ", stopwatchSimulation.ElapsedMilliseconds, "ms");
+        GD.Print("Active cells:", _activeCells.Count, ", in next frame:", _nextActiveCells.Count, ", all cells:", _cells);
+
+        
         (_cellsCurrent, _cellsNext) = (_cellsNext, _cellsCurrent);
         _visualBuffer.Clear();
         for (int x = 0; x < Size; x++)
             for (int y = 0; y < Size; y++)
                 for (int z = 0; z < Size; z++)
                 {
-                    if (_cellsCurrent[x, y, z].IsAir) continue;
-                    _visualBuffer.Add((new Vector3(x, y, z), _cellsCurrent[x, y, z].Color));
+                    Vector3I pos = new Vector3I(x, y, z);
+                    if (_cellsCurrent[ToIndex(pos)].IsAir) continue;
+                    _visualBuffer.Add(new CellVisual(new Vector3(x, y, z), _cellsCurrent[ToIndex(pos)].Type));
                 }
-
         lock (_visualLock)
         {
             (_visualInstances, _visualBuffer) = (_visualBuffer, _visualInstances);
@@ -109,30 +109,32 @@ public partial class Chunk : Node3D
             {
                 var instance = _visualInstances[i];
                 _multimesh.SetInstanceTransform(i, new Transform3D(Basis.Identity, instance.Position));
-                _multimesh.SetInstanceCustomData(i, instance.Color);
+                _multimesh.SetInstanceCustomData(i, CellsVisualPropertyes.GetColorForCellType(instance.Type));
             }
         }
     }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private int ToIndex(Vector3I pos) => pos.X + (pos.Y << 6) + (pos.Z << 12);
     public void ReservedCell(Vector3I pos)
     {
-        _cellsCurrent[pos.X, pos.Y, pos.Z].Reserved = true;
+        _cellsCurrent[ToIndex(pos)].Reserved = true;
     }
     public void DeleteStaticCell(Vector3I pos)
     {
-        _cellsStatic[pos.X, pos.Y, pos.Z] = DefaultCells.Air;
+        _cellsStatic[ToIndex(pos)] = DefaultCells.Air;
     }
     public void SetStaticCell(Vector3I pos, Cell cell)
     {
-        _cellsStatic[pos.X, pos.Y, pos.Z] = cell;
-        _cellsNext[pos.X, pos.Y, pos.Z] = cell;
+        _cellsStatic[ToIndex(pos)] = cell;
+        _cellsNext[ToIndex(pos)] = cell;
     }
     public void SetCell(Vector3I pos, Cell cell)
     {
-        _cellsNext[pos.X, pos.Y, pos.Z] = cell;
+        _cellsNext[ToIndex(pos)] = cell;
         if (CellBehaviorRegistry.IsActive(cell.Type))
             MarkActive(pos);
     }
-    public Cell GetCell(Vector3I pos) => _cellsCurrent[pos.X, pos.Y, pos.Z];
+    public Cell GetCell(Vector3I pos) => _cellsCurrent[ToIndex(pos)];
     public bool IsInBounds(Vector3I pos)
     {
         return (uint)pos.X < Size && (uint)pos.Y < Size && (uint)pos.Z < Size;
@@ -153,11 +155,12 @@ public partial class Chunk : Node3D
         int half = Size / 2;
         for (int y = Size - 1; y >= Size - 25; y--)
         {
-            if (!IsInBounds(new Vector3I(x, y, z))) return;
-            _cellsCurrent[x, y, z] = cell;
+            Vector3I pos = new Vector3I(x, y, z);
+            if (!IsInBounds(pos)) return;
+            _cellsCurrent[ToIndex(pos)] = cell;
             _cells = _nextActiveCells.Count+1;
             if (CellBehaviorRegistry.IsActive(cell.Type))
-                MarkActive(new Vector3I(x, y, z));
+                MarkActive(pos);
         }
     }
     public void MarkActive(Vector3I pos)
