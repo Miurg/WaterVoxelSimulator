@@ -9,6 +9,6 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
 {
     public class AirBehaviorCell : BaseBehaviorCell
     {
-        public override void Simulate(Chunk chunk, Vector3I pos) { }
+        public override void Simulate(Chunk chunk, int index) { }
     }
 }

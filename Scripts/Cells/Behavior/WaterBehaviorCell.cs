@@ -1,5 +1,6 @@
 using Godot;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -7,53 +8,85 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
 {
     internal class WaterBehaviorCell : BaseBehaviorCell
     {
-        private static readonly Vector3I[] OffsetDirections =
-        [
-            Vector3I.Right, Vector3I.Left,
-            Vector3I.Forward, Vector3I.Back,
-        ];
+        private static int[] _offsets;
+        private int _offsetDown;
 
-
-        public override void Simulate(Chunk chunk, Vector3I pos)
+        private void PrecomputeOffsets(int size)
         {
-            Vector3I below = pos + Vector3I.Down;
+            int dx = 1;
+            int dy = size;
+            int dz = size * size;
 
-            if (chunk.IsInBounds(below))
+            _offsets = new[]
             {
-                var belowCell = chunk.GetCell(below);
+                dx, -dx,   // Left / Right
+                dz, -dz    // Forward / Back
+            };
+
+            _offsetDown = -dy;
+        }
+        public override void Simulate(Chunk chunk, int index)
+        {
+            PrecomputeOffsets(Chunk.Size);
+
+            int belowIndex = index + _offsetDown;
+            if (!(((index / Chunk.Size) % Chunk.Size) == 0) && chunk.IsIndexInBounds(belowIndex))
+            {
+                var belowCell = chunk.GetCell(belowIndex);
                 if (belowCell.IsAir && !belowCell.Reserved)
                 {
-                    chunk.MarkNeighborsActive(pos);
-                    chunk.SwapCells(pos, below);
-                    chunk.ReservedCell(below);
-                    chunk.DeleteStaticCell(pos);
+                    chunk.MarkNeighborsActive(index);
+                    chunk.SwapCells(index, belowIndex);
+                    chunk.ReservedCell(belowIndex);
+                    chunk.DeleteStaticCell(index);
                     return;
                 }
             }
+                //In theory its better than cycle
             int startIndex = (int)(Stopwatch.GetTimestamp() & 0x3) + 1;
-            //in theory its better than cycle
-            if (TryMove(pos, OffsetDirections[(startIndex + 0) & 3], chunk)) return;
-            if (TryMove(pos, OffsetDirections[(startIndex + 1) & 3], chunk)) return;
-            if (TryMove(pos, OffsetDirections[(startIndex + 2) & 3], chunk)) return;
-            if (TryMove(pos, OffsetDirections[(startIndex + 3) & 3], chunk)) return;
-            chunk.SetStaticCell(pos, chunk.GetCell(pos));
+            if (TryMove(index, _offsets[(startIndex + 0) & 3], chunk)) return;
+            if (TryMove(index, _offsets[(startIndex + 1) & 3], chunk)) return;
+            if (TryMove(index, _offsets[(startIndex + 2) & 3], chunk)) return;
+            if (TryMove(index, _offsets[(startIndex + 3) & 3], chunk)) return;
+            chunk.SetStaticCell(index, chunk.GetCell(index));
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryMove(Vector3I pos, Vector3I offset, Chunk chunk)
+        private bool TryMove(int index, int offset, Chunk chunk)
         {
-            var target = pos + offset;
-            if (!chunk.IsInBounds(target))
+            int targetIndex = index + offset;
+            if (IsMoveValid(index, offset, Chunk.Size) && chunk.IsIndexInBounds(targetIndex))
+            {
+                var targetCell = chunk.GetCell(targetIndex);
+                if (targetCell.IsAir && !targetCell.Reserved)
+                {
+                    chunk.MarkNeighborsActive(index);
+                    chunk.SwapCells(index, targetIndex);
+                    chunk.ReservedCell(targetIndex);
+                    chunk.DeleteStaticCell(index);
+                    return true;
+                }
                 return false;
+            }
+            return false;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //It is my personal hell.
+        private bool IsMoveValid(int index, int offset, int size)
+        {
+            int x = index % size;
+            int y = (index / size) % size;
+            int z = index / (size * size);
 
-            var targetCell = chunk.GetCell(target);
-            if (!targetCell.IsAir || targetCell.Reserved)
-                return false;
+            if (offset == -1 && x == 0) return false;                // Can't go left if on the left edge
+            if (offset == 1 && x == size - 1) return false;          // Can't go right if on the right edge
 
-            chunk.MarkNeighborsActive(pos);
-            chunk.SwapCells(pos, target);
-            chunk.ReservedCell(target);
-            chunk.DeleteStaticCell(pos);
-            return true;
+            //if (offset == -size && y == 0) return false;             // Can't go down if on the bottom edge
+            //if (offset == size && y == size - 1) return false;       // Can't go up if on the top edge
+
+            if (offset == -size * size && z == 0) return false;      // Can't go back if on the back edge
+            if (offset == size * size && z == size - 1) return false; // Can't go forward if on the front edge
+
+            return true; // Movement in this direction is possible
         }
     }
 }

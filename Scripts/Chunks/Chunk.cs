@@ -28,22 +28,30 @@ public partial class Chunk : Node3D
     private Mesh _cellMesh;
 
 
-    private static readonly Vector3I[] _neighborOffsets =
-    [
-        Vector3I.Up, Vector3I.Down,
-        Vector3I.Left, Vector3I.Right,
-        Vector3I.Forward, Vector3I.Back
-    ];
+    private int[] _neighborOffsetsByIndex;
+    private void InitializeOffsets()
+    {
+        int dx = 1;
+        int dy = Size;
+        int dz = Size * Size;
 
+        _neighborOffsetsByIndex = new int[]
+        {
+        dx, -dx,
+        dy, -dy,
+        dz, -dz
+        };
+    }
     public override void _Ready()
     {
         _activeCells = new ActiveCellsBuffer(Size);
         _nextActiveCells = new ActiveCellsBuffer(Size);
         InitializeMultimesh();
-        for (int x = 0; x < Size; x++)
-            for (int y = 0; y < Size; y++)
-                for (int z = 0; z < Size; z++)
-                    _cellsStatic[ToIndex(new Vector3I(x, y, z))] = DefaultCells.Air;
+        InitializeOffsets();
+        for (int i = 0; i < Size*Size*Size; i++)
+        {
+            _cellsStatic[i] = DefaultCells.Air;
+        }
         GD.Print("Chunk ready.");
     }
     private void InitializeMultimesh()
@@ -64,23 +72,16 @@ public partial class Chunk : Node3D
     }
     public void Simulate()
     {
-
+        var stopwatchSimulation = System.Diagnostics.Stopwatch.StartNew();
         _activeCells.Swap(_nextActiveCells);
         _nextActiveCells.Clear();
         Array.Copy(_cellsStatic, _cellsNext, _cellsStatic.Length);
-        var stopwatchSimulation = System.Diagnostics.Stopwatch.StartNew();
-        foreach (var pos in _activeCells.GetActivePositions())
+        foreach (var index in _activeCells.GetActiveIndices())
         {
-            var cell = GetCell(pos);
+            var cell = _cellsCurrent[index];
             if (cell.IsAir) continue;
-            CellBehaviorRegistry.GetBehavior(cell.Type).Simulate(this, pos);
+            CellBehaviorRegistry.GetBehavior(cell.Type).Simulate(this, index);
         }
-
-        stopwatchSimulation.Stop();
-        GD.Print("Simulate time all cells: ", stopwatchSimulation.ElapsedMilliseconds, "ms");
-        GD.Print("Active cells:", _activeCells.Count, ", in next frame:", _nextActiveCells.Count, ", all cells:", _cells);
-
-        
         (_cellsCurrent, _cellsNext) = (_cellsNext, _cellsCurrent);
         _visualBuffer.Clear();
         for (int x = 0; x < Size; x++)
@@ -91,6 +92,9 @@ public partial class Chunk : Node3D
                     if (_cellsCurrent[ToIndex(pos)].IsAir) continue;
                     _visualBuffer.Add(new CellVisual(new Vector3(x, y, z), _cellsCurrent[ToIndex(pos)].Type));
                 }
+        stopwatchSimulation.Stop();
+        GD.Print("Simulate time all cells: ", stopwatchSimulation.ElapsedMilliseconds, "ms");
+        GD.Print("Active cells:", _activeCells.Count, ", in next frame:", _nextActiveCells.Count, ", all cells:", _cells);
         lock (_visualLock)
         {
             (_visualInstances, _visualBuffer) = (_visualBuffer, _visualInstances);
@@ -114,33 +118,44 @@ public partial class Chunk : Node3D
         }
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int ToIndex(Vector3I pos) => pos.X + (pos.Y << 6) + (pos.Z << 12);
-    public void ReservedCell(Vector3I pos)
+    public int ToIndex(Vector3I pos) => pos.X + (pos.Y << 6) + (pos.Z << 12);
+    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    //public Vector3I FromIndex(int index) => new Vector3I(index & 63,(index >>> 6) & 63,(index >>> 12) & 63);
+    
+    public void ReservedCell(int index)
     {
-        _cellsCurrent[ToIndex(pos)].Reserved = true;
+        _cellsCurrent[index].Reserved = true;
     }
-    public void DeleteStaticCell(Vector3I pos)
+    public void DeleteStaticCell(int index)
     {
-        _cellsStatic[ToIndex(pos)] = DefaultCells.Air;
+        _cellsStatic[index] = DefaultCells.Air;
     }
-    public void SetStaticCell(Vector3I pos, Cell cell)
+
+    //We add the cell to the _cellsNext array as well - so that it can be known already in the current iteration. 
+    //At the beginning of the next iteration, it will already be rewritten itself in _cellsNext from _cellsStatic.
+    public void SetStaticCell(int index, Cell cell)
     {
-        _cellsStatic[ToIndex(pos)] = cell;
-        _cellsNext[ToIndex(pos)] = cell;
+        _cellsStatic[index] = cell;
+        _cellsNext[index] = cell;
     }
-    public void SetCell(Vector3I pos, Cell cell)
+    public void SetCell(int index, Cell cell)
     {
-        _cellsNext[ToIndex(pos)] = cell;
+        _cellsNext[index] = cell;
         if (CellBehaviorRegistry.IsActive(cell.Type))
-            MarkActive(pos);
+            MarkActive(index);
     }
-    public Cell GetCell(Vector3I pos) => _cellsCurrent[ToIndex(pos)];
+    public Cell GetCell(int index) => _cellsCurrent[index];
     public bool IsInBounds(Vector3I pos)
     {
         return (uint)pos.X < Size && (uint)pos.Y < Size && (uint)pos.Z < Size;
     }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsIndexInBounds(int index)
+    {
+        return index >= 0 && index < Size * Size * Size;
+    }
 
-    public void SwapCells(Vector3I a, Vector3I b)
+    public void SwapCells(int a, int b)
     {
         var temp = GetCell(a);
         SetCell(a, GetCell(b));
@@ -156,24 +171,26 @@ public partial class Chunk : Node3D
         for (int y = Size - 1; y >= Size - 25; y--)
         {
             Vector3I pos = new Vector3I(x, y, z);
-            if (!IsInBounds(pos)) return;
+            if (!IsInBounds(pos) || !IsIndexInBounds(ToIndex(pos))) return;
             _cellsCurrent[ToIndex(pos)] = cell;
             _cells = _nextActiveCells.Count+1;
+
             if (CellBehaviorRegistry.IsActive(cell.Type))
-                MarkActive(pos);
+                MarkActive(ToIndex(pos));
         }
     }
-    public void MarkActive(Vector3I pos)
+    public void MarkActive(int index)
     {
-        if (!IsInBounds(pos)) return;
-        _nextActiveCells.Add(pos);
-        DeleteStaticCell(pos);
+        if (!IsIndexInBounds(index)) return;
+        _nextActiveCells.Add(index);
+        DeleteStaticCell(index);
     }
-    public void MarkNeighborsActive(Vector3I pos)
+    public void MarkNeighborsActive(int index)
     {
-        foreach (var offset in _neighborOffsets)
+        foreach (var offset in _neighborOffsetsByIndex)
         {
-            MarkActive(pos + offset);
+            MarkActive(index + offset);
         }
     }
+
 }
