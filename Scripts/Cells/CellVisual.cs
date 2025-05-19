@@ -9,12 +9,12 @@ namespace VoxelParticleSimulator.Scripts.Cells
 {
     struct CellVisual
     {
-        public Vector3 Position;
+        public int IndexPosition;
         public CellType Type;
 
-        public CellVisual(Vector3 position, CellType type)
+        public CellVisual(int Position, CellType type)
         {
-            Position = position;
+            IndexPosition = Position;
             Type = type;
         }
     }
