@@ -9,25 +9,20 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
     internal class WaterBehaviorCell : BaseBehaviorCell
     {
         private static int[] _offsets;
-        private int _offsetDown;
+        private static int _offsetDown;
 
-        private void PrecomputeOffsets(int size)
+        static WaterBehaviorCell()
         {
+            int size = Chunk.Size;
             int dx = 1;
             int dy = size;
             int dz = size * size;
 
-            _offsets = new[]
-            {
-                dx, -dx,   // Left / Right
-                dz, -dz    // Forward / Back
-            };
-
+            _offsets = new[] { dx, -dx, dz, -dz };
             _offsetDown = -dy;
         }
         public override void Simulate(Chunk chunk, int index)
         {
-            PrecomputeOffsets(Chunk.Size);
 
             int belowIndex = index + _offsetDown;
             if (!(((index / Chunk.Size) % Chunk.Size) == 0) && chunk.IsIndexInBounds(belowIndex))
