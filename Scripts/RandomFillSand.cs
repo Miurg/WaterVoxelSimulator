@@ -20,7 +20,7 @@ namespace VoxelParticleSimulator.Scripts
 
         private void OnButtonPressed()
         {
-            mainnode.chunk.FillColumn(Random.Shared.Next(0, 63), Random.Shared.Next(0, 63), DefaultCells.Sand);
+            mainnode.chunk.FillColumn(Random.Shared.Next(0, 63), Random.Shared.Next(0, 63), CellType.Sand);
             GD.Print("Pressed sand");
         }
     }

@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace VoxelParticleSimulator.Scripts.Cells.Behavior
 {
-    public class AirBehaviorCell : BaseBehaviorCell
+    public class AirSimulationCell : BaseSimulationCell
     {
-        public override void Simulate(Chunk chunk, int index) { }
+        public override void Simulate(int index, ref SimulationContext ctx) { }
     }
 }

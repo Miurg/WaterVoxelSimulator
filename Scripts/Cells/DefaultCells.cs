@@ -9,8 +9,8 @@ namespace VoxelParticleSimulator.Scripts.Cells
 {
     public static class DefaultCells
     {
-        public static readonly Cell Air = new() { Type = CellType.Air, Reserved = false };
-        public static readonly Cell Sand = new() { Type = CellType.Sand, Reserved = false };
-        public static readonly Cell Water = new() { Type = CellType.Water, Reserved = false };
+        public static readonly Cell Air = new (CellType.Air, CellFlags.None);
+        public static readonly Cell Sand = new (CellType.Sand, CellFlags.Active);
+        public static readonly Cell Water = new (CellType.Water, CellFlags.Active);
     }
 }

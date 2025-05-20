@@ -19,7 +19,7 @@ namespace VoxelParticleSimulator.Scripts
 
         private void OnButtonPressed()
         {
-            mainnode.chunk.FillColumn(Random.Shared.Next(0, 63), Random.Shared.Next(0, 63), DefaultCells.Water);
+            mainnode.chunk.FillColumn(Random.Shared.Next(0, 63), Random.Shared.Next(0, 63), CellType.Water);
             GD.Print("Pressed water");
         }
     }
