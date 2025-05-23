@@ -29,24 +29,24 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
             _simulateArray = new CellSimulateDelegate[maxCellType + 1];
             _isActiveArray = new bool[maxCellType + 1];
 
-            _simulateArray[(int)CellType.Air] = SimulateAir;
-            _simulateArray[(int)CellType.Water] = SimulateWater;
-            _simulateArray[(int)CellType.Sand] = SimulateSand;
+            _simulateArray[(byte)CellType.Air] = SimulateAir;
+            _simulateArray[(byte)CellType.Water] = SimulateWater;
+            _simulateArray[(byte)CellType.Sand] = SimulateSand;
 
-            _isActiveArray[(int)CellType.Air] = false;
-            _isActiveArray[(int)CellType.Water] = true;
-            _isActiveArray[(int)CellType.Sand] = true;
+            _isActiveArray[(byte)CellType.Air] = false;
+            _isActiveArray[(byte)CellType.Water] = true;
+            _isActiveArray[(byte)CellType.Sand] = true;
 
         }
 
         public static void Simulate(CellType type,ref SimulationContext context)
         {
-            _simulateArray[(int)type]( ref context);
+            _simulateArray[(byte)type]( ref context);
         }
 
         public static bool IsActive(CellType type)
         {
-            return _isActiveArray[(int)type];
+            return _isActiveArray[(byte)type];
         }
 
         private static void SimulateAir(ref SimulationContext ctx) { AirSimulationCell.Simulate(ref ctx); }
@@ -98,11 +98,11 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
             //    }
 
             //}
-            for (int index = 0; index < ctx.CurrentIndicies.Length; index++)
+            for (ushort index = 0; index < ctx.CurrentIndicies.Length; index++)
             {
                 MovingCellsDownMove.Simulate(index, ref ctx);
             }
-            for (int index = 0; index < ctx.CurrentIndicies.Length; index++)
+            for (ushort index = 0; index < ctx.CurrentIndicies.Length; index++)
             {
                 LiquidMove.Simulate(index, ref ctx);
 

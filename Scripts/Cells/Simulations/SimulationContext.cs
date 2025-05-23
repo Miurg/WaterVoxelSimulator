@@ -14,9 +14,9 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
         public readonly Span<CellFlags> CurrentCellsFlags;
         public readonly Span<CellType> NextCellsTypes;
         public readonly Span<CellFlags> NextCellsFlags;
-        public readonly Span<int> CurrentIndicies;
-        public readonly Span<int> NextIndicies;
-        public SimulationContext(Span<CellType> currentTypes, Span<CellFlags> currentFlags, Span<CellType> nextTypes, Span<CellFlags> nextFlags, Span<int> currentInd, Span<int> nextInd)
+        public readonly Span<ushort> CurrentIndicies;
+        public readonly Span<ushort> NextIndicies;
+        public SimulationContext(Span<CellType> currentTypes, Span<CellFlags> currentFlags, Span<CellType> nextTypes, Span<CellFlags> nextFlags, Span<ushort> currentInd, Span<ushort> nextInd)
         {
             CurrentCellsTypes = currentTypes;
             CurrentCellsFlags = currentFlags;
@@ -25,11 +25,11 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
             CurrentIndicies = currentInd;
             NextIndicies = nextInd;
         }
-        public bool IsCurrentCellReserved(int index) => (CurrentCellsFlags[index] & CellFlags.Reserved) != 0;
+        public bool IsCurrentCellReserved(ushort index) => (CurrentCellsFlags[index] & CellFlags.Reserved) != 0;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsCurrentCellActive(int index) => (CurrentCellsFlags[index] & CellFlags.Active) != 0;
-        public bool IsCurrentCellHasMoved(int index) => (CurrentCellsFlags[index] & CellFlags.HasMoved) != 0;
-        public void SetCurrentCellReserved(int index, bool value)
+        public bool IsCurrentCellActive(ushort index) => (CurrentCellsFlags[index] & CellFlags.Active) != 0;
+        public bool IsCurrentCellHasMoved(ushort index) => (CurrentCellsFlags[index] & CellFlags.HasMoved) != 0;
+        public void SetCurrentCellReserved(ushort index, bool value)
         {
             ref var flags = ref CurrentCellsFlags[index];
             if (value)
@@ -38,7 +38,7 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
                 flags &= ~CellFlags.Reserved;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetCurrentCellActive(int index, bool value)
+        public void SetCurrentCellActive(ushort index, bool value)
         {
             ref var flags = ref CurrentCellsFlags[index];
             if (value)
@@ -46,7 +46,7 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
             else
                 flags &= ~CellFlags.Active;
         }
-        public void SetCurrentCellHasMoved(int index, bool value)
+        public void SetCurrentCellHasMoved(ushort index, bool value)
         {
             ref var flags = ref CurrentCellsFlags[index];
             if (value)
@@ -54,11 +54,11 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
             else
                 flags &= ~CellFlags.HasMoved;
         }
-        public bool IsNextCellReserved(int index) => (NextCellsFlags[index] & CellFlags.Reserved) != 0;
+        public bool IsNextCellReserved(ushort index) => (NextCellsFlags[index] & CellFlags.Reserved) != 0;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsNextCellActive(int index) => (NextCellsFlags[index] & CellFlags.Active) != 0;
-        public bool IsNextCellHasMoved(int index) => (NextCellsFlags[index] & CellFlags.HasMoved) != 0;
-        public void SetNextCellReserved(int index, bool value)
+        public bool IsNextCellActive(ushort index) => (NextCellsFlags[index] & CellFlags.Active) != 0;
+        public bool IsNextCellHasMoved(ushort index) => (NextCellsFlags[index] & CellFlags.HasMoved) != 0;
+        public void SetNextCellReserved(ushort index, bool value)
         {
             ref var flags = ref NextCellsFlags[index];
             if (value)
@@ -67,7 +67,7 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
                 flags &= ~CellFlags.Reserved;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetNextCellActive(int index, bool value)
+        public void SetNextCellActive(ushort index, bool value)
         {
             ref var flags = ref NextCellsFlags[index];
             if (value)
@@ -75,7 +75,7 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
             else
                 flags &= ~CellFlags.Active;
         }
-        public void SetNextCellHasMoved(int index, bool value)
+        public void SetNextCellHasMoved(ushort index, bool value)
         {
             ref var flags = ref NextCellsFlags[index];
             if (value)

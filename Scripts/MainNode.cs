@@ -6,17 +6,28 @@ using VoxelParticleSimulator.Scripts.Cells;
 
 public partial class MainNode : Node
 {
-    public Chunk chunk;
-
+    public Chunk[] chunk = new Chunk[16];
+    public int cells = 0;
     public override void _Ready()
     {
-        chunk = GD.Load<PackedScene>("res://Chunk.tscn").Instantiate<Chunk>();
-        Debug.Write("Chunk Ready");
-        AddChild(chunk);
-        for (int i = 0; i < 31; i++)
-            for (int j = 0; j < 31; j++)
-                chunk.FillColumn(i, j, CellType.Water); 
-        chunk.UpdateVisuals();
+        for (short i = 0; i < 4; i++)
+        {
+            for (short r = 0; r < 4; r++)
+            {
+                chunk[(i*4)+r] = GD.Load<PackedScene>("res://Chunk.tscn").Instantiate<Chunk>();
+                AddChild(chunk[(i * 4) + r]);
+                chunk[(i * 4) + r].Position = new Vector3(33*r, 0, 33 * i);
+                for (ushort k = 0; k < 31; k++)
+                    for (ushort j = 0; j < 31; j++)
+                    {
+                        chunk[(i * 4) + r].FillColumn(k, j, CellType.Water);
+                        cells+=11;
+                    }
+
+                Debug.Write("Chunk Ready");
+                chunk[(i * 4) + r].UpdateVisuals();
+            }
+        }
         //Task task1 = Task.Run(async () => await RunTasks());
     }
     //private async Task RunTasks()
@@ -27,10 +38,21 @@ public partial class MainNode : Node
 
     public override void _PhysicsProcess(double delta)
     {
-        chunk.Simulate();
+        var stopwatchSimulation = System.Diagnostics.Stopwatch.StartNew();
+        for (short i = 0; i < 16; i++)
+        {
+            chunk[i].Simulate();
+        }
+        stopwatchSimulation.Stop();
+        GD.Print($"Simulate time all cells: {stopwatchSimulation.Elapsed.TotalMilliseconds:F6} ms");
+        GD.Print("All cells:", cells);
+
     }
     public override void _Process(double delta)
     {
-        chunk.UpdateVisuals();
+        for (short i = 0; i < 16; i++)
+        {
+            chunk[i].UpdateVisuals();
+        }
     }
 }

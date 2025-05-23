@@ -11,22 +11,24 @@ namespace VoxelParticleSimulator.Scripts.Cells.Simulations.GeneralMoving
     internal unsafe class MovingCellsDownMove : BaseSimulation
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Simulate(int index, ref SimulationContext ctx)
+        public static void Simulate(ushort index, ref SimulationContext ctx)
         {
-            if (!ctx.IsCurrentCellActive(ctx.CurrentIndicies[index])) return;
+            var currentInd = ctx.CurrentIndicies[index];
 
-            int belowIndex = ctx.CurrentIndicies[index] -SimulatorConst.ChunkSize;
-            if (!IsIndexInBounds(belowIndex)) return;
+            if (!ctx.IsCurrentCellActive(currentInd)) return;
 
-            bool isNotBottomRow = ((ctx.CurrentIndicies[index] >> 5) & (SimulatorConst.ChunkSize - 1)) > 0;
+            int belowIndex = currentInd - SimulatorConst.ChunkSize;
+            if (currentInd < SimulatorConst.ChunkSize) return;
+
+            bool isNotBottomRow = ((currentInd >> 5) & (SimulatorConst.ChunkSize - 1)) > 0;
             if (!isNotBottomRow) return;
 
-            if ((ctx.CurrentCellsTypes[belowIndex] == CellType.Air) && !ctx.IsCurrentCellReserved(belowIndex))
+            if ((ctx.CurrentCellsTypes[belowIndex] == CellType.Air) && !ctx.IsCurrentCellReserved((ushort)belowIndex))
             {
-                MarkNeighborsActive(ctx.CurrentIndicies[index], ref ctx);
-                SwapCells(ctx.CurrentIndicies[index], belowIndex, index, ref ctx);
-                ctx.SetCurrentCellReserved(belowIndex, true);
-                ctx.SetCurrentCellHasMoved(ctx.CurrentIndicies[index], true);
+                MarkNeighborsActive(currentInd, ref ctx);
+                SwapCells(currentInd, (ushort)belowIndex, index, ref ctx);
+                ctx.SetCurrentCellReserved((ushort)belowIndex, true);
+                ctx.SetCurrentCellHasMoved(currentInd, true);
             }
         }
     }

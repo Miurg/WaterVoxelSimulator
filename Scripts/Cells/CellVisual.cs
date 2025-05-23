@@ -9,10 +9,10 @@ namespace VoxelParticleSimulator.Scripts.Cells
 {
     struct CellVisual
     {
-        public int IndexPosition;
+        public ushort IndexPosition;
         public CellType Type;
 
-        public CellVisual(int Position, CellType type)
+        public CellVisual(ushort Position, CellType type)
         {
             IndexPosition = Position;
             Type = type;

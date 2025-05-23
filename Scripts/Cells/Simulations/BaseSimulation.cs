@@ -17,7 +17,7 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
             return index >= 0 && index < SimulatorConst.ChunkSize3;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SwapCells(int index, int targetIndex, int indexInLocalMassive, ref SimulationContext ctx)
+        public static void SwapCells(ushort index, ushort targetIndex, ushort indexInLocalMassive, ref SimulationContext ctx)
         {
             CellType tempType = ctx.CurrentCellsTypes[targetIndex];
             CellFlags tempFlags = ctx.CurrentCellsFlags[targetIndex];
@@ -28,33 +28,33 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
             ctx.NextIndicies[indexInLocalMassive] = targetIndex;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SetNextStaticCellOnIndex(int index, ref SimulationContext ctx)
+        public static void SetNextStaticCellOnIndex(ushort index, ref SimulationContext ctx)
         {
             ctx.NextCellsTypes[index] = ctx.CurrentCellsTypes[index];
             ctx.NextCellsFlags[index] |= ctx.CurrentCellsFlags[index];
         }
         //Unroll if possible
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void MarkNeighborsActive(int index, ref SimulationContext ctx)
+        public static void MarkNeighborsActive(ushort index, ref SimulationContext ctx)
         {
             int i;
             i = index + dx;
-            if (IsIndexInBounds(i)) ctx.SetNextCellActive(i, true);
+            if (IsIndexInBounds(i)) ctx.SetNextCellActive((ushort)i, true);
 
             i = index - dx;
-            if (IsIndexInBounds(i)) ctx.SetNextCellActive(i, true);
+            if (IsIndexInBounds(i)) ctx.SetNextCellActive((ushort)i, true);
 
             i = index + dy;
-            if (IsIndexInBounds(i)) ctx.SetNextCellActive(i, true);
+            if (IsIndexInBounds(i)) ctx.SetNextCellActive((ushort)i, true);
 
             i = index - dy;
-            if (IsIndexInBounds(i)) ctx.SetNextCellActive(i, true);
+            if (IsIndexInBounds(i)) ctx.SetNextCellActive((ushort)i, true);
 
             i = index + dz;
-            if (IsIndexInBounds(i)) ctx.SetNextCellActive(i, true);
+            if (IsIndexInBounds(i)) ctx.SetNextCellActive((ushort)i, true);
 
             i = index - dz;
-            if (IsIndexInBounds(i)) ctx.SetNextCellActive(i, true);
+            if (IsIndexInBounds(i)) ctx.SetNextCellActive((ushort)i, true);
         }
     }
 }
