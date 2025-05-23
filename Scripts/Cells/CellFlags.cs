@@ -11,7 +11,8 @@ namespace VoxelParticleSimulator.Scripts.Cells
     {
         None = 0,
         Reserved = 1 << 0, // 00000001
-        Active = 1 << 1    // 00000010
+        Active = 1 << 1,    // 00000010
+        HasMoved = 1 << 2, //00000100
     }
 
 }

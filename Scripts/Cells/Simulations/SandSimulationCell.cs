@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 namespace VoxelParticleSimulator.Scripts.Cells.Behavior
 {
-    public class SandSimulationCell : BaseSimulationCell
+    public class SandSimulationCell : BaseSimulation
     {
         private static int[] _offsets;
         private static int _offsetDown;
@@ -21,7 +21,7 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
             _offsetDown = -dy;
         }
 
-        public override void Simulate(int index, ref SimulationContext ctx)
+        public static void Simulate(int index, ref SimulationContext ctx)
         {
 
             //    int belowIndex = index + _offsetDown;

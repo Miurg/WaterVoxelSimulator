@@ -13,8 +13,8 @@ public partial class MainNode : Node
         chunk = GD.Load<PackedScene>("res://Chunk.tscn").Instantiate<Chunk>();
         Debug.Write("Chunk Ready");
         AddChild(chunk);
-        for (int i = 0; i < 63; i++)
-            for (int j = 0; j < 63; j++)
+        for (int i = 0; i < 31; i++)
+            for (int j = 0; j < 31; j++)
                 chunk.FillColumn(i, j, CellType.Water); 
         chunk.UpdateVisuals();
         //Task task1 = Task.Run(async () => await RunTasks());

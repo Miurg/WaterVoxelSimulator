@@ -8,7 +8,7 @@ namespace VoxelParticleSimulator.Scripts
 {
     internal class SimulatorConst
     {
-        public const int ChunkSize = 64;
-        public const int ChunkSize3 = ChunkSize * ChunkSize * ChunkSize;
+        public const ushort ChunkSize = 32;
+        public const ushort ChunkSize3 = ChunkSize * ChunkSize * ChunkSize;
     }
 }

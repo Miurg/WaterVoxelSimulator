@@ -7,83 +7,65 @@ using System.Runtime.InteropServices;
 
 namespace VoxelParticleSimulator.Scripts.Cells.Behavior
 {
-    internal class WaterSimulationCell : BaseSimulationCell
+    internal class WaterSimulationCell : BaseSimulation
     {
-        private static int[] _neighbours;
-        private static int[] _offsets;
-        private static int _offsetDown;
+        private readonly static int[] _offsets;
+        private readonly static int _offsetDown;
 
         static WaterSimulationCell()
         {
-            int size = SimulatorConst.ChunkSize;
-            int dx = 1;
-            int dy = size;
-            int dz = size * size;
-            _neighbours = new int[]{dx, -dx, dy, -dy, dz, -dz};
             _offsets = new[] { dx, -dx, dz, -dz };
             _offsetDown = -dy;
         }
-        public override void Simulate(int index, ref SimulationContext ctx)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Simulate(int index, ref SimulationContext ctx)
         {
-            if (!ctx.IsCurrentActive(index))
-            {
-                ctx.NextTypes[index] = CellType.Water;
-                ctx.SetNextActive(index,false);
-                return;
-            }
-            int belowIndex = index + _offsetDown;
-            if (!(((index / SimulatorConst.ChunkSize) % SimulatorConst.ChunkSize) == 0) && SimulationUtils.IsIndexInBounds(belowIndex))
-            {
-                if ((ctx.CurrentTypes[belowIndex] == CellType.Air) && !ctx.IsCurrentReserved(belowIndex))
-                {
-                    MarkNeighborsActive(index, ctx);
-                    SimulationUtils.SwapCells(index, belowIndex, ctx);
-                    ctx.SetCurrentReserved(belowIndex, true);
-                    return;
-                }
-            }
-            //In theory its better than cycle
-            int startIndex = (int)(Stopwatch.GetTimestamp() & 0x3) + 1;
-            if (TryMove(index, _offsets[(startIndex + 0) & 3], ctx)) return;
-            if (TryMove(index, _offsets[(startIndex + 1) & 3], ctx)) return;
-            if (TryMove(index, _offsets[(startIndex + 2) & 3], ctx)) return;
-            if (TryMove(index, _offsets[(startIndex + 3) & 3], ctx)) return;
-            ctx.NextTypes[index] = CellType.Water;
-            ctx.SetNextActive(index, false);
+            //if (!ctx.IsCurrentCellActive(index))
+            //{
+            //    SetNextStaticCellOnIndex(index, ref ctx);
+            //    return;
+            //}
+            //int belowIndex = index + _offsetDown;
+            //if (!(((index / SimulatorConst.ChunkSize) % SimulatorConst.ChunkSize) == 0))
+            //{
+            //    if ((ctx.CurrentCellsTypes[belowIndex] == CellType.Air) && !ctx.IsCurrentCellReserved(belowIndex))
+            //    {
+            //        MarkNeighborsActive(index, ref ctx);
+            //        SwapCells(index, belowIndex, ref ctx);
+            //        ctx.SetCurrentCellReserved(belowIndex, true);
+            //        return;
+            //    }
+            //}
+            ////In theory its better than cycle
+            //int startIndex = (int)(Stopwatch.GetTimestamp() & 0x3) + 1;
+            //if (TryMove(index, _offsets[(startIndex + 0) & 3], ref ctx)) return;
+            //if (TryMove(index, _offsets[(startIndex + 1) & 3], ref ctx)) return;
+            //if (TryMove(index, _offsets[(startIndex + 2) & 3], ref ctx)) return;
+            //if (TryMove(index, _offsets[(startIndex + 3) & 3], ref ctx)) return;
+            //ctx.SetCurrentCellActive(index, false);
+            //SetNextStaticCellOnIndex(index, ref ctx);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryMove(int index, int offset, SimulationContext ctx)
+        private static bool TryMove(int index, int offset, ref SimulationContext ctx)
         {
-            int targetIndex = index + offset;
-            if (IsMoveValid(index, offset, SimulatorConst.ChunkSize) && SimulationUtils.IsIndexInBounds(targetIndex))
-            {
-                if ((ctx.CurrentTypes[targetIndex] == CellType.Air) && !ctx.IsCurrentReserved(targetIndex))
-                {
-                    MarkNeighborsActive(index, ctx);
-                    SimulationUtils.SwapCells(index,targetIndex,ctx);
-                    ctx.SetCurrentReserved(targetIndex, true);
-                    return true;
-                }
-                return false;
-            }
-            return false;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void MarkNeighborsActive(int index, SimulationContext ctx)
-        {
-            foreach (var neighbour in _neighbours)
-            {
-                var targetNeighbour = index + neighbour;
-                if (SimulationUtils.IsIndexInBounds(targetNeighbour))
-                {
-                    ctx.SetNextActive(targetNeighbour, true);
-                    ctx.SetCurrentActive(targetNeighbour, true);
-                }
-            }
+            return true;
+            //int targetIndex = index + offset;
+            //if (IsMoveValid(index, offset, SimulatorConst.ChunkSize))
+            //{
+            //    if ((ctx.CurrentCellsTypes[targetIndex] == CellType.Air) && !ctx.IsCurrentCellReserved(targetIndex))
+            //    {
+            //        MarkNeighborsActive(index, ref ctx);
+            //        SwapCells(index,targetIndex,ref ctx);
+            //        ctx.SetCurrentCellReserved(targetIndex, true);
+            //        return true;
+            //    }
+            //    return false;
+            //}
+            //return false;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         //It is my personal hell.
-        private bool IsMoveValid(int index, int offset, int size)
+        private static bool IsMoveValid(int index, int offset, int size)
         {
             int x = index % size;
             int y = (index / size) % size;

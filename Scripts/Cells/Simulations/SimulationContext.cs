@@ -1,59 +1,87 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace VoxelParticleSimulator.Scripts.Cells.Behavior
 {
+    //This structure is aggressive like a mad dog. Woof-woof!
     public readonly ref struct SimulationContext
     {
-        public readonly Span<CellType> CurrentTypes;
-        public readonly Span<CellFlags> CurrentFlags;
-        public readonly Span<CellType> NextTypes;
-        public readonly Span<CellFlags> NextFlags;
-        public SimulationContext(Span<CellType> currentTypes, Span<CellFlags> currentFlags, Span<CellType> nextTypes, Span<CellFlags> nextFlags)
+        public readonly Span<CellType> CurrentCellsTypes;
+        public readonly Span<CellFlags> CurrentCellsFlags;
+        public readonly Span<CellType> NextCellsTypes;
+        public readonly Span<CellFlags> NextCellsFlags;
+        public readonly Span<int> CurrentIndicies;
+        public readonly Span<int> NextIndicies;
+        public SimulationContext(Span<CellType> currentTypes, Span<CellFlags> currentFlags, Span<CellType> nextTypes, Span<CellFlags> nextFlags, Span<int> currentInd, Span<int> nextInd)
         {
-            CurrentTypes = currentTypes;
-            CurrentFlags = currentFlags;
-            NextTypes = nextTypes;
-            NextFlags = nextFlags;
+            CurrentCellsTypes = currentTypes;
+            CurrentCellsFlags = currentFlags;
+            NextCellsTypes = nextTypes;
+            NextCellsFlags = nextFlags;
+            CurrentIndicies = currentInd;
+            NextIndicies = nextInd;
         }
-        public bool IsCurrentReserved(int index) => (CurrentFlags[index] & CellFlags.Reserved) != 0;
-        public bool IsCurrentActive(int index) => (CurrentFlags[index] & CellFlags.Active) != 0;
-
-        public void SetCurrentReserved(int index, bool value)
+        public bool IsCurrentCellReserved(int index) => (CurrentCellsFlags[index] & CellFlags.Reserved) != 0;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsCurrentCellActive(int index) => (CurrentCellsFlags[index] & CellFlags.Active) != 0;
+        public bool IsCurrentCellHasMoved(int index) => (CurrentCellsFlags[index] & CellFlags.HasMoved) != 0;
+        public void SetCurrentCellReserved(int index, bool value)
         {
+            ref var flags = ref CurrentCellsFlags[index];
             if (value)
-                CurrentFlags[index] |= CellFlags.Reserved;
+                flags |= CellFlags.Reserved;
             else
-                CurrentFlags[index] &= ~CellFlags.Reserved;
+                flags &= ~CellFlags.Reserved;
         }
-
-        public void SetCurrentActive(int index, bool value)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetCurrentCellActive(int index, bool value)
         {
+            ref var flags = ref CurrentCellsFlags[index];
             if (value)
-                CurrentFlags[index] |= CellFlags.Active;
+                flags |= CellFlags.Active;
             else
-                CurrentFlags[index] &= ~CellFlags.Active;
+                flags &= ~CellFlags.Active;
         }
-        public bool IsNextReserved(int index) => (NextFlags[index] & CellFlags.Reserved) != 0;
-        public bool IsNextActive(int index) => (NextFlags[index] & CellFlags.Active) != 0;
-
-        public void SetNextReserved(int index, bool value)
+        public void SetCurrentCellHasMoved(int index, bool value)
         {
+            ref var flags = ref CurrentCellsFlags[index];
             if (value)
-                NextFlags[index] |= CellFlags.Reserved;
+                flags |= CellFlags.HasMoved;
             else
-                NextFlags[index] &= ~CellFlags.Reserved;
+                flags &= ~CellFlags.HasMoved;
         }
-
-        public void SetNextActive(int index, bool value)
+        public bool IsNextCellReserved(int index) => (NextCellsFlags[index] & CellFlags.Reserved) != 0;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsNextCellActive(int index) => (NextCellsFlags[index] & CellFlags.Active) != 0;
+        public bool IsNextCellHasMoved(int index) => (NextCellsFlags[index] & CellFlags.HasMoved) != 0;
+        public void SetNextCellReserved(int index, bool value)
         {
+            ref var flags = ref NextCellsFlags[index];
             if (value)
-                NextFlags[index] |= CellFlags.Active;
+                flags |= CellFlags.Reserved;
             else
-                NextFlags[index] &= ~CellFlags.Active;
+                flags &= ~CellFlags.Reserved;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetNextCellActive(int index, bool value)
+        {
+            ref var flags = ref NextCellsFlags[index];
+            if (value)
+                flags |= CellFlags.Active;
+            else
+                flags &= ~CellFlags.Active;
+        }
+        public void SetNextCellHasMoved(int index, bool value)
+        {
+            ref var flags = ref NextCellsFlags[index];
+            if (value)
+                flags |= CellFlags.HasMoved;
+            else
+                flags &= ~CellFlags.HasMoved;
         }
     }
 }
