@@ -17,7 +17,6 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
             _offsets = new[] { dx, -dx, dz, -dz };
             _offsetDown = -dy;
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Simulate(int index, ref SimulationContext ctx)
         {
             //if (!ctx.IsCurrentCellActive(index))
@@ -45,7 +44,6 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
             //ctx.SetCurrentCellActive(index, false);
             //SetNextStaticCellOnIndex(index, ref ctx);
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool TryMove(int index, int offset, ref SimulationContext ctx)
         {
             return true;
@@ -63,7 +61,6 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
             //}
             //return false;
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         //It is my personal hell.
         private static bool IsMoveValid(int index, int offset, int size)
         {

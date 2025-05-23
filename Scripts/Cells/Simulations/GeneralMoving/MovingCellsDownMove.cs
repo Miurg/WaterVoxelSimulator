@@ -10,7 +10,6 @@ namespace VoxelParticleSimulator.Scripts.Cells.Simulations.GeneralMoving
 {
     internal unsafe class MovingCellsDownMove : BaseSimulation
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Simulate(ushort index, ref SimulationContext ctx)
         {
             var currentInd = ctx.CurrentIndicies[index];
@@ -25,7 +24,7 @@ namespace VoxelParticleSimulator.Scripts.Cells.Simulations.GeneralMoving
 
             if ((ctx.CurrentCellsTypes[belowIndex] == CellType.Air) && !ctx.IsCurrentCellReserved((ushort)belowIndex))
             {
-                MarkNeighborsActive(currentInd, ref ctx);
+                //MarkNeighborsActive(currentInd, ref ctx);
                 SwapCells(currentInd, (ushort)belowIndex, index, ref ctx);
                 ctx.SetCurrentCellReserved((ushort)belowIndex, true);
                 ctx.SetCurrentCellHasMoved(currentInd, true);

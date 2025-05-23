@@ -13,7 +13,6 @@ using VoxelParticleSimulator.Scripts;
 using VoxelParticleSimulator.Scripts.Cells;
 using VoxelParticleSimulator.Scripts.Cells.Behavior;
 using VoxelParticleSimulator.Scripts.Cells.Simulations.GeneralMoving;
-using VoxelParticleSimulator.Scripts.Chunks;
 
 public partial class Chunk : Node3D
 {
@@ -79,10 +78,9 @@ public partial class Chunk : Node3D
         AddChild(_multimeshInstance);
         _multimesh.InstanceCount = SimulatorConst.ChunkSize3;
     }
+
     public unsafe void Simulate()
     {
-
-  
         foreach (var kvp in _indicesByTypeCurrent)
         {
             var type = kvp.Key; 
@@ -95,6 +93,7 @@ public partial class Chunk : Node3D
             CellSimulationsRegistry.Simulate(type, ref context);
             _indicesByTypeCurrent[type].Clear();
             _indicesByTypeCurrent[type].AddRange(nextIntidicie);
+            _indicesByTypeNext[type].Sort();
         }
 
         //CellSimulationsRegistry.Simulate(CellType.Water,ref context);
@@ -151,7 +150,7 @@ public partial class Chunk : Node3D
         if (!((ushort)x < SimulatorConst.ChunkSize && (ushort)z < SimulatorConst.ChunkSize))
             return;
 
-        for (ushort y = SimulatorConst.ChunkSize - 1; y >= SimulatorConst.ChunkSize - 11; y--)
+        for (ushort y = SimulatorConst.ChunkSize - 1; y >= SimulatorConst.ChunkSize - MainNode.FillSize; y--)
         {
             Vector3I pos = new Vector3I(x, y, z);
             if (!((ushort)x < SimulatorConst.ChunkSize && (ushort) y < SimulatorConst.ChunkSize && (ushort)z < SimulatorConst.ChunkSize) 

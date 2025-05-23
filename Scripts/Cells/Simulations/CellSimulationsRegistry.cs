@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -100,27 +101,77 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
             //}
             for (ushort index = 0; index < ctx.CurrentIndicies.Length; index++)
             {
-                MovingCellsDownMove.Simulate(index, ref ctx);
+                //MovingCellsDownMove.Simulate(index, ref ctx);
+                var currentInd = ctx.CurrentIndicies[index];
+
+                if (!ctx.IsCurrentCellActive(currentInd)) continue;
+
+                int belowIndex = currentInd - SimulatorConst.ChunkSize;
+                if (currentInd < SimulatorConst.ChunkSize) continue;
+
+                bool isNotBottomRow = ((currentInd >> 5) & (SimulatorConst.ChunkSize - 1)) > 0;
+                if (!isNotBottomRow) continue;
+
+                if ((ctx.CurrentCellsTypes[belowIndex] == CellType.Air) && !ctx.IsCurrentCellReserved((ushort)belowIndex))
+                {
+                    CellType tempType = ctx.CurrentCellsTypes[belowIndex];
+                    CellFlags tempFlags = ctx.CurrentCellsFlags[belowIndex];
+                    ctx.NextCellsTypes[belowIndex] = ctx.CurrentCellsTypes[currentInd];
+                    ctx.NextCellsFlags[belowIndex] = ctx.CurrentCellsFlags[currentInd];
+                    ctx.NextCellsTypes[currentInd] = tempType;
+                    ctx.NextCellsFlags[currentInd] = tempFlags;
+                    ctx.NextIndicies[index] = (ushort)belowIndex;
+                    ctx.SetCurrentCellReserved((ushort)belowIndex, true);
+                    ctx.SetCurrentCellHasMoved(currentInd, true);
+                }
             }
             for (ushort index = 0; index < ctx.CurrentIndicies.Length; index++)
             {
                 LiquidMove.Simulate(index, ref ctx);
 
-                if (!ctx.IsCurrentCellActive(ctx.CurrentIndicies[index]))
+                var currentIndex = ctx.CurrentIndicies[index];
+                if (!ctx.IsCurrentCellActive(currentIndex))
                 {
-                    ctx.NextCellsTypes[ctx.CurrentIndicies[index]] = ctx.CurrentCellsTypes[ctx.CurrentIndicies[index]];
-                    ctx.NextCellsFlags[ctx.CurrentIndicies[index]] |= ctx.CurrentCellsFlags[ctx.CurrentIndicies[index]];
-                    ctx.NextIndicies[index] = ctx.CurrentIndicies[index];
+                    ctx.NextCellsTypes[currentIndex] = ctx.CurrentCellsTypes[currentIndex];
+                    ctx.NextCellsFlags[currentIndex] |= ctx.CurrentCellsFlags[currentIndex];
+                    ctx.NextIndicies[index] = currentIndex;
                 }
-                else if (!ctx.IsCurrentCellHasMoved(ctx.CurrentIndicies[index]))
+                else if (!ctx.IsCurrentCellHasMoved(currentIndex))
                 {
-                    ctx.SetCurrentCellActive(ctx.CurrentIndicies[index], false);
-                    ctx.NextCellsTypes[ctx.CurrentIndicies[index]] = ctx.CurrentCellsTypes[ctx.CurrentIndicies[index]];
-                    ctx.NextCellsFlags[ctx.CurrentIndicies[index]] |= ctx.CurrentCellsFlags[ctx.CurrentIndicies[index]];
-                    ctx.NextIndicies[index] = ctx.CurrentIndicies[index];
+                    ctx.SetCurrentCellActive(currentIndex, false);
+                    ctx.NextCellsTypes[currentIndex] = ctx.CurrentCellsTypes[currentIndex];
+                    ctx.NextCellsFlags[currentIndex] |= ctx.CurrentCellsFlags[currentIndex];
+                    ctx.NextIndicies[index] = currentIndex;
                 }
             }
 
+            int chunkSizeShift = (int)Math.Log2(chunkSize); 
+            var indices = ctx.CurrentIndicies.ToArray();
+            var length = indices.Length;
+            for (int i = 0; i < length; i++)
+            {
+                var index = indices[i];
+                if (ctx.IsCurrentCellHasMoved(index))
+                {
+                    int x = index & chunkSizeMask;
+                    int temp = index >> chunkSizeShift;
+                    int y = temp & chunkSizeMask;
+                    int z = temp >> chunkSizeShift;
+
+                    if (x < chunkSizeMinus1)
+                        ctx.SetNextCellActive((ushort)(index + 1), true);
+                    if (x > 0)
+                        ctx.SetNextCellActive((ushort)(index - 1), true);
+                    if (y < chunkSizeMinus1)
+                        ctx.SetNextCellActive((ushort)(index + dy), true);
+                    if (y > 0)
+                        ctx.SetNextCellActive((ushort)(index - dy), true);
+                    if (z < chunkSizeMinus1)
+                        ctx.SetNextCellActive((ushort)(index + dz), true);
+                    if (z > 0)
+                        ctx.SetNextCellActive((ushort)(index - dz), true);
+                }
+            }
 
             //for (int index = 0; index < SimulatorConst.ChunkSize3; index++)
             //{
@@ -129,6 +180,12 @@ namespace VoxelParticleSimulator.Scripts.Cells.Behavior
             //}
 
         }
+        const int chunkSize = SimulatorConst.ChunkSize;
+        const int chunkSizeMask = chunkSize - 1; 
+        const int dy = chunkSize;
+        const int dz = chunkSize * chunkSize;
+        const int chunkSizeMinus1 = chunkSize - 1;
+
         private static SandSimulationCell _sandBehavior = new SandSimulationCell();
         private static void SimulateSand(ref SimulationContext ctx) { /* песок */ }
     }

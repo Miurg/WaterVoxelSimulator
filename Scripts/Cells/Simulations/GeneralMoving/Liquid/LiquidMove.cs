@@ -22,7 +22,7 @@ namespace VoxelParticleSimulator.Scripts.Cells.Simulations.GeneralMoving.Liquid
         public static void Simulate(ushort index, ref SimulationContext ctx)
         {
             var currentInd = ctx.CurrentIndicies[index];
-            if (!ctx.IsCurrentCellActive(ctx.CurrentIndicies[index]) || ctx.IsCurrentCellHasMoved(ctx.CurrentIndicies[index])) return;
+            if (!ctx.IsCurrentCellActive(currentInd) || ctx.IsCurrentCellHasMoved(currentInd)) return;
             int startIndex = (int)(Stopwatch.GetTimestamp() & 0x3) + 1;
             if (TryMove(currentInd, _offsets[(startIndex + 0) & 3], index, ref ctx)) return;
             if (TryMove(currentInd, _offsets[(startIndex + 1) & 3], index, ref ctx)) return;
@@ -37,7 +37,7 @@ namespace VoxelParticleSimulator.Scripts.Cells.Simulations.GeneralMoving.Liquid
             {
                 if ((ctx.CurrentCellsTypes[targetIndex] == CellType.Air) && !ctx.IsCurrentCellReserved((ushort)targetIndex))
                 {
-                    MarkNeighborsActive(index, ref ctx);
+                    //MarkNeighborsActive(index, ref ctx);
                     SwapCells(index, (ushort)targetIndex, indexInMassive, ref ctx);
                     ctx.SetCurrentCellReserved((ushort)targetIndex, true);
                     ctx.SetCurrentCellHasMoved(index, true);
@@ -50,20 +50,16 @@ namespace VoxelParticleSimulator.Scripts.Cells.Simulations.GeneralMoving.Liquid
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsMoveValid(int index, int offset, int size)
         {
-            int x = index & 0x1F;              
-            int y = (index >> 5) & 0x1F;      
-            int z = index >> 10;
+            int x = index & 31;
+            int layerSize = size * size;
 
-            if (offset == -1 && x == 0) return false;                // Can't go left if on the left edge
-            if (offset == 1 && x == size - 1) return false;          // Can't go right if on the right edge
+            if ((offset == -1 && x == 0) ||
+                (offset == 1 && x == size - 1) ||
+                (offset == -layerSize && index < layerSize) ||
+                (offset == layerSize && index >= layerSize * (size - 1)))
+                return false;
 
-            //if (offset == -size && y == 0) return false;             // Can't go down if on the bottom edge
-            //if (offset == size && y == size - 1) return false;       // Can't go up if on the top edge
-
-            if (offset == -size * size && z == 0) return false;      // Can't go back if on the back edge
-            if (offset == size * size && z == size - 1) return false; // Can't go forward if on the front edge
-
-            return true; // Movement in this direction is possible
+            return true;
         }
     }
 }

@@ -8,6 +8,7 @@ public partial class MainNode : Node
 {
     public Chunk[] chunk = new Chunk[16];
     public int cells = 0;
+    public static int FillSize = 7;
     public override void _Ready()
     {
         for (short i = 0; i < 4; i++)
@@ -17,11 +18,11 @@ public partial class MainNode : Node
                 chunk[(i*4)+r] = GD.Load<PackedScene>("res://Chunk.tscn").Instantiate<Chunk>();
                 AddChild(chunk[(i * 4) + r]);
                 chunk[(i * 4) + r].Position = new Vector3(33*r, 0, 33 * i);
-                for (ushort k = 0; k < 31; k++)
-                    for (ushort j = 0; j < 31; j++)
+                for (ushort k = 0; k < 30; k++)
+                    for (ushort j = 0; j < 30; j++)
                     {
                         chunk[(i * 4) + r].FillColumn(k, j, CellType.Water);
-                        cells+=11;
+                        cells+= FillSize;
                     }
 
                 Debug.Write("Chunk Ready");
