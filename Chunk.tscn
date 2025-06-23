@@ -1,8 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://bvx0miq23kv0c"]
+[gd_scene load_steps=2 format=3 uid="uid://dpnnp0tqk4jsx"]
 
-[ext_resource type="Script" uid="uid://djkgy7puq41o0" path="res://Scripts/Chunks/Chunk.cs" id="1_lexys"]
-[ext_resource type="BoxMesh" uid="uid://o7buc8bd1puk" path="res://new_box_mesh.tres" id="2_s3wkh"]
+[ext_resource type="BoxMesh" uid="uid://o7buc8bd1puk" path="res://new_box_mesh.tres" id="1_lexys"]
 
-[node name="Node3D" type="Node3D"]
-script = ExtResource("1_lexys")
-_cellMesh = ExtResource("2_s3wkh")
+[node name="Chunk" type="Chunk"]
+cellMesh = ExtResource("1_lexys")

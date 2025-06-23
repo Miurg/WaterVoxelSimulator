@@ -1,41 +1,14 @@
-[gd_scene load_steps=5 format=3 uid="uid://dxfyrkiead3ku"]
+[gd_scene load_steps=2 format=3 uid="uid://dxfyrkiead3ku"]
 
-[ext_resource type="Script" uid="uid://duk0bt3317b1k" path="res://Scripts/MainNode.cs" id="1_r0du0"]
-[ext_resource type="BoxMesh" uid="uid://o7buc8bd1puk" path="res://new_box_mesh.tres" id="2_uu6xs"]
-[ext_resource type="Script" uid="uid://mqx4ibbaeihx" path="res://Scripts/RandomFillSand.cs" id="3_r0du0"]
-[ext_resource type="Script" uid="uid://cd00k24ctg4gy" path="res://Scripts/RandomFillWater.cs" id="4_cm0pq"]
+[sub_resource type="Environment" id="Environment_uu6xs"]
+sdfgi_use_occlusion = true
+adjustment_contrast = 8.0
+adjustment_saturation = 0.01
 
 [node name="Node3D" type="Node3D"]
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(-0.0715845, 0.218433, -0.973223, 0, 0.975726, 0.218995, 0.997435, 0.0156766, -0.0698469, 0, 7.47129, 24.838)
+transform = Transform3D(-4.37114e-08, 0.419452, -0.907777, 0, 0.907777, 0.419452, 1, 1.83348e-08, -3.96802e-08, -0.00050807, 38.2385, 30.9753)
+environment = SubResource("Environment_uu6xs")
 
-[node name="Node3D" type="Node3D" parent="."]
-transform = Transform3D(0.999977, -0.0023394, 0.00642785, 0.00240609, 0.999943, -0.0103876, -0.00640319, 0.0104029, 0.999925, 0, 0, 0)
-script = ExtResource("1_r0du0")
-
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.791554, 0.611099, 0, -0.611099, 0.791554, -0.00282383, 0.00623703, 1.70133)
-shadow_enabled = true
-
-[node name="NewBoxMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(76.3908, 0, 0, 0, 1, 0, 0, 0, 58.9641, 38.022, -2, 28.492)
-mesh = ExtResource("2_uu6xs")
-
-[node name="Button" type="Button" parent="." node_paths=PackedStringArray("mainnode")]
-offset_right = 57.0
-offset_bottom = 51.0
-text = "RandomFillSand"
-script = ExtResource("3_r0du0")
-mainnode = NodePath("../Node3D")
-
-[node name="Button2" type="Button" parent="." node_paths=PackedStringArray("mainnode")]
-offset_left = -2.0
-offset_top = 54.0
-offset_right = 140.0
-offset_bottom = 110.0
-text = "RandomFillWater"
-script = ExtResource("4_cm0pq")
-mainnode = NodePath("../Node3D")
-
-[connection signal="pressed" from="Button2" to="Button2" method="_on_pressed"]
+[node name="World" type="World" parent="."]
