@@ -12,7 +12,7 @@ namespace DownMove
             uint_fast16_t currentIndex = ctx._indicesCurrent->list[index];
             Cell currentCell = ctx._currentCellBuffer->Cells[currentIndex];
 
-            if (!currentCell.IsActive()) continue;
+            if (!currentCell.IsActive() || currentCell.IsAlreadyMove()) continue;
 
             uint_fast16_t belowIndex = currentIndex - CHUNK_EXT;
             Cell belowCell = ctx._currentCellBuffer->Cells[belowIndex];

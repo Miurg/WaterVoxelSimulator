@@ -4,7 +4,8 @@
 #include <vector>
 #include "Chunk.h"
 
-struct SimulationContext {
+struct SimulationContext 
+{
     CellBuffer* _currentCellBuffer;
     CellBuffer* _nextCellBuffer;
     TypeIndexData* _indicesCurrent;

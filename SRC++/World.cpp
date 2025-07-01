@@ -38,7 +38,8 @@ void World::_notification(int p_what)
 
 void World::_ready()
 { 
-    if (godot::Engine::get_singleton()->is_editor_hint()) {
+    if (godot::Engine::get_singleton()->is_editor_hint()) 
+    {
         return; 
     }
     int temp = 0;
@@ -74,7 +75,8 @@ void World::_ready()
 int NumberOfAllCells;
 void World::_process(double delta)
 {
-    if (godot::Engine::get_singleton()->is_editor_hint()) {
+    if (godot::Engine::get_singleton()->is_editor_hint()) 
+    {
         return;
     }
     std::scoped_lock lock(_visualMutex);
@@ -88,7 +90,8 @@ void World::_process(double delta)
 
 void World::_physics_process(double delta)
 {
-    if (godot::Engine::get_singleton()->is_editor_hint()) {
+    if (godot::Engine::get_singleton()->is_editor_hint()) 
+    {
         return;
     }
     simulateStepCount++;
@@ -130,10 +133,12 @@ void World::_physics_process(double delta)
 
     std::scoped_lock lock(_visualMutex);
     _haveUpdateForVisual = true;
+
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration = end - start;
-    UtilityFunctions::print("Chunk Simulation time: ", duration.count());    
     physicIteration = duration.count();
+
+    UtilityFunctions::print("Chunk Simulation time: ", physicIteration);
     UtilityFunctions::print("Number of all cells: ", NumberOfAllCells);
     UtilityFunctions::print("Simulate step: ", simulateStepCount);
 }

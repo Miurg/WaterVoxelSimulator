@@ -9,7 +9,8 @@
 #include "DeactivateUnmovedCells.h"
 #include "ActivateNeighborsOfMovedCells.h"
 #include "FilterOutDeadLayerCells.h"
-static void SimulateAir(SimulationContext& ctx) {
+static void SimulateAir(SimulationContext& ctx) 
+{
     // ...
 }
 static void SimulateWater(SimulationContext& ctx) 
@@ -24,39 +25,30 @@ static void SimulateWater(SimulationContext& ctx)
 
 static void SimulateSand(SimulationContext& ctx) 
 {
-    //for (uint_fast16_t index = 0; index < ctx.indicesCount; index++)
-    //{
-    //    uint_fast16_t currentIndex = ctx._indicesCurrent->at(index);
-    //    Cell currentCell = ctx._currentCellBuffer->Cells[currentIndex];
-    //    ctx._nextCellBuffer->Cells[currentIndex] = currentCell;
-    //    ctx._indicesNext->at(index) = currentIndex;
-    //}
+
 }
 static void SimulateDirt(SimulationContext& ctx) 
 {
-   /* for (uint_fast16_t index = 0; index < ctx.indicesCount; index++)
-    {
-        uint_fast16_t currentIndex = ctx._indicesCurrent->at(index);
-        Cell currentCell = ctx._currentCellBuffer->Cells[currentIndex];
-        ctx._nextCellBuffer->Cells[currentIndex] = currentCell;
-        ctx._indicesNext->at(index) = currentIndex;
-    }*/
 
 }
-namespace CellSimulationRegistry {
+namespace CellSimulationRegistry 
+{
 
     static std::array<SimulateFunc, static_cast<size_t>(CellTypes::COUNT)> simulateFuncs;
     static std::array<bool, static_cast<size_t>(CellTypes::COUNT)> isActiveFlags;
 
-    void Init() {
-        simulateFuncs = {
+    void Init() 
+    {
+        simulateFuncs = 
+        {
             SimulateAir,
             SimulateSand,
             SimulateWater,
             SimulateDirt
         };
 
-        isActiveFlags = {
+        isActiveFlags = 
+        {
             false,  //Air
             true,   //Sand
             true,   //Water
@@ -64,13 +56,15 @@ namespace CellSimulationRegistry {
         };
     }
 
-    void Simulate(CellTypes type, SimulationContext& ctx) {
+    void Simulate(CellTypes type, SimulationContext& ctx) 
+    {
         auto index = static_cast<size_t>(type);
         assert(index < simulateFuncs.size());
         simulateFuncs[index](ctx);
     }
 
-    bool IsActive(CellTypes type) {
+    bool IsActive(CellTypes type) 
+    {
         return isActiveFlags[static_cast<size_t>(type)];
     }
 

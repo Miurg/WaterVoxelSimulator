@@ -4,7 +4,8 @@
 #include "SimulationContext.h"
 #include <array>
 
-namespace CellSimulationRegistry {
+namespace CellSimulationRegistry 
+{
 
     using SimulateFunc = void(*)(SimulationContext&);
 

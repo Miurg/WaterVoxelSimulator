@@ -14,9 +14,10 @@ namespace LiquidMove
 
     static constexpr int _offsets[4] = { 1, -1, CHUNK_EXT2, -CHUNK_EXT2 };//dx,dz
 
-    inline bool TryMove(uint16_t currentIndex, Cell *currentCell, int offset, uint16_t indexInMassive, SimulationContext& ctx)
+    inline bool TryMove(uint16_t currentIndex, Cell *currentCell, uint8_t direction, uint16_t indexInMassive, SimulationContext& ctx)
     {
-        int targetIndex = currentIndex + offset;
+        uint16_t offsetByDirection = _offsets[direction];
+        uint16_t targetIndex = currentIndex + offsetByDirection;
         Cell targetCell = ctx._currentCellBuffer->Cells[targetIndex];
         if (!targetCell.IsAir() || targetCell.IsReserved()) return false;
 
@@ -27,8 +28,7 @@ namespace LiquidMove
         ctx._indicesNext->set.insert(targetIndex);
         ctx._currentCellBuffer->Cells[targetIndex].SetReserved(true);
         ctx._currentCellBuffer->Cells[currentIndex].SetAlreadyMove(true);
-        currentCell->SetReserved(true);
-        currentCell->SetAlreadyMove(true);
+        SetDirection(ctx._nextCellBuffer->Cells[targetIndex].Flags, static_cast<EDirection>(direction));
         return true;
     }
 
@@ -42,15 +42,15 @@ namespace LiquidMove
 
             if (!currentCell.IsActive() || currentCell.IsAlreadyMove()) continue;
 
-            offsetIndexStart = (offsetIndexStart + index);
+            uint8_t predetermentMove = static_cast<uint8_t>(GetDirection(currentCell.Flags));
 
-            if (TryMove(currentIndex, &currentCell, _offsets[offsetIndexStart & 3], index, ctx)) continue;
-            offsetIndexStart = (offsetIndexStart + 1);
-            if (TryMove(currentIndex, &currentCell, _offsets[offsetIndexStart & 3], index, ctx)) continue;
-            offsetIndexStart = (offsetIndexStart + 2);
-            if (TryMove(currentIndex, &currentCell, _offsets[offsetIndexStart & 3], index, ctx)) continue;
-            offsetIndexStart = (offsetIndexStart + 3);
-            if (TryMove(currentIndex, &currentCell, _offsets[offsetIndexStart & 3], index, ctx)) continue;
+            if (TryMove(currentIndex, &currentCell, predetermentMove, index, ctx)) continue;
+            offsetIndexStart += predetermentMove;
+            if (TryMove(currentIndex, &currentCell, offsetIndexStart & 3, index, ctx)) continue;
+            offsetIndexStart += 1;
+            if (TryMove(currentIndex, &currentCell, offsetIndexStart & 3, index, ctx)) continue;
+            offsetIndexStart += 2;
+            if (TryMove(currentIndex, &currentCell, offsetIndexStart & 3, index, ctx)) continue;
         }
         ctx.randomOffset = offsetIndexStart;
     }

@@ -166,6 +166,7 @@ void Chunk::SimulationStep()
             ctx._indicesNext = &(itNext->second);
         }
         CellSimulationRegistry::Simulate(type, ctx);
+        std::reverse(itNext->second.list.begin(), itNext->second.list.end());
     }
 }
 
