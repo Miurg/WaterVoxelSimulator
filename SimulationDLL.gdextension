@@ -6,3 +6,4 @@ reloadable = true
 
 [libraries]
 windows.debug.x86_64 = "res://Extension/MyGDExtension.dll"
+windows.release.x86_64 = "res://Extension/MyGDExtension.dll"

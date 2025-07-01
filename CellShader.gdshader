@@ -3,8 +3,8 @@ render_mode unshaded;
 
 varying vec4 instance_color;
 
-
-void vertex() {
+void vertex()
+{
     instance_color = INSTANCE_CUSTOM;
 }
 

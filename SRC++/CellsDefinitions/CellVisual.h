@@ -5,12 +5,10 @@
 
 struct CellVisual
 {
-    uint16_t IndexPosition;
     CellTypes Type;
 
-    CellVisual(uint16_t Position, CellTypes type)
+    CellVisual()
     {
-        IndexPosition = Position;
-        Type = type;
+        Type = CellTypes::AIR;
     }
 };

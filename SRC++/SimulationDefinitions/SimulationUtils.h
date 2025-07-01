@@ -64,3 +64,13 @@ inline godot::Vector3i EXTCellIndexToVector(uint_fast32_t index)
     return godot::Vector3i(static_cast<int>(x), static_cast<int>(y), static_cast<int>(z));
 }
 
+inline int FloorDiv(int a, int b)
+{
+    int div = a / b;
+    int rem = a % b;
+    if ((rem != 0) && ((b < 0) != (rem < 0)))
+    {
+        div--;
+    }
+    return div;
+}

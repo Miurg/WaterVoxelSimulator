@@ -28,6 +28,8 @@ using namespace godot;
 void World::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("FillArea", "start", "end", "typeId"), &World::FillArea);
+    ClassDB::bind_method(D_METHOD("GetPhysicIteration"), &World::GetPhysicIteration);
+    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "physicIteration"), "", "GetPhysicIteration");
 }
 
 void World::_notification(int p_what)
@@ -81,6 +83,7 @@ void World::_process(double delta)
     {
         chunk->second->UpdateVisuals();
     }
+    _haveUpdateForVisual = false;
 }
 
 void World::_physics_process(double delta)
@@ -102,11 +105,11 @@ void World::_physics_process(double delta)
             auto it = chunks.get(int3(pos.x + dx, pos.y + dy, pos.z + dz));
             if (it != nullptr)
             {
-                chunk->second->UpdateDeadFromChunk((*it), i);
+                chunk->second->UpdateDeadCellsFromChunk((*it), i);
             }
         }
 
-        chunk->second->StepSimulation();
+        chunk->second->SimulationStep();
         
         for (int i = 0; i < 27; ++i)
         {
@@ -115,7 +118,7 @@ void World::_physics_process(double delta)
             auto it = chunks.get(int3(pos.x + dx, pos.y + dy, pos.z + dz));
             if (it != nullptr)
             {
-                (*it)->UpdateBorderFromChunk(chunk->second, InverseForChunkDirection(i));
+                (*it)->UpdateBorderCellsFromChunk(chunk->second, InverseForChunkDirection(i));
             }
         }
     }
@@ -124,16 +127,20 @@ void World::_physics_process(double delta)
         chunk->second->CommitStep();
         NumberOfAllCells += chunk->second->GetNumberActiveCells();
     }
+
     std::scoped_lock lock(_visualMutex);
     _haveUpdateForVisual = true;
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration = end - start;
     UtilityFunctions::print("Chunk Simulation time: ", duration.count());    
-    
+    physicIteration = duration.count();
     UtilityFunctions::print("Number of all cells: ", NumberOfAllCells);
     UtilityFunctions::print("Simulate step: ", simulateStepCount);
 }
-
+float World::GetPhysicIteration() 
+{
+    return physicIteration;
+}
 Chunk* World::GetChunk(const int3& index)
 {
     return *chunks.get(index);
@@ -170,16 +177,7 @@ Chunk* World::CreateChunk(Vector3i globalPos, int3 chunkPos)
     return chunkPtr;
 }
 
-inline int FloorDiv(int a, int b) 
-{
-    int div = a / b;
-    int rem = a % b;
-    if ((rem != 0) && ((b < 0) != (rem < 0))) 
-    {
-        div--;
-    }
-    return div;
-}
+
 
 void World::FillArea(
     const Vector3i& world_start,

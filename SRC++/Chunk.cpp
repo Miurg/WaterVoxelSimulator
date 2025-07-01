@@ -22,8 +22,8 @@ using namespace godot;
 
 void Chunk::_bind_methods()
 {
-    ClassDB::bind_method(D_METHOD("FillArea", "start", "end", "typeId"), &Chunk::FillArea);
-    ClassDB::bind_method(D_METHOD("StepSimulation"), &Chunk::StepSimulation);
+    ClassDB::bind_method(D_METHOD("FillArea", "start", "end", "CellTypeId"), &Chunk::FillArea);
+    ClassDB::bind_method(D_METHOD("SimulationStep"), &Chunk::SimulationStep);
     ClassDB::bind_method(D_METHOD("UpdateVisuals"), &Chunk::UpdateVisuals);
     ClassDB::bind_method(D_METHOD("SetCellMesh", "mesh"), &Chunk::SetCellMesh);
     ClassDB::bind_method(D_METHOD("GetCellMesh"), &Chunk::GetCellMesh);
@@ -88,7 +88,7 @@ void Chunk::InitializeMultiMesh()
     }
 }
 
-void Chunk::UpdateDeadFromChunk(Chunk* chunk, int direction)
+void Chunk::UpdateDeadCellsFromChunk(Chunk* chunk, int direction)
 {
     const auto& myDeadAndItsBorder = boundaryPairs[direction];
 
@@ -103,7 +103,7 @@ void Chunk::UpdateDeadFromChunk(Chunk* chunk, int direction)
     }
 }
 
-void Chunk::UpdateBorderFromChunk(Chunk* chunk, int direction)
+void Chunk::UpdateBorderCellsFromChunk(Chunk* chunk, int direction)
 {
     const auto& theirDeadAndMyBorder = boundaryPairs[InverseForChunkDirection(direction)];
 
@@ -146,7 +146,7 @@ void Chunk::UpdateBorderFromChunk(Chunk* chunk, int direction)
     }
 }
 
-void Chunk::StepSimulation()
+void Chunk::SimulationStep()
 {
     SimulationContext ctx = SimulationContext();
     ctx._currentCellBuffer = _ptrCurrentCellBuffer;
@@ -159,7 +159,6 @@ void Chunk::StepSimulation()
 
     for (auto &[type, indices] : _indicesByTypeCurrent)
     {
-        ctx.indicesCount = indices.list.size();
         ctx._indicesCurrent = &indices;
         auto itNext = _indicesByTypeNext.find(type);
         if (itNext != _indicesByTypeNext.end()) 
@@ -173,12 +172,9 @@ void Chunk::StepSimulation()
 void Chunk::CommitStep()
 {
     _ptrNextCellBuffer->CopyTo((*_ptrCurrentCellBuffer)); //Move every cells physically cuz we dont simulate non active cells. That just cheaper
+
     _indicesByTypeCurrent = _indicesByTypeNext;
 }
-struct CellGPUData {
-    uint32_t type;
-    uint32_t packed_position; // Или 3 отдельных float/int
-};
 
 static const Basis basis;
 static const godot::Transform3D baseTransform(basis, Vector3());
@@ -200,14 +196,14 @@ void Chunk::UpdateVisuals()
                 uint_fast32_t dstIndex = dstZ * CHUNK_SIZE * CHUNK_SIZE +
                     dstY * CHUNK_SIZE +
                     dstX;
+
                 //if (!IsBorderLayerCell(srcIndex)) continue;
-                if (_ptrCurrentCellBuffer->Cells[srcIndex].Type == _ptrVisualCurrentState[dstIndex]) continue;
+                if (_ptrNextCellBuffer->Cells[srcIndex].Type == _visualCurrentState[dstIndex]) continue;
 
-                _ptrVisualCurrentState[dstIndex] = _ptrCurrentCellBuffer->Cells[srcIndex].Type;//FROM CHUNK_EXT TO CHUNK_SIZE
+                _visualCurrentState[dstIndex] = _ptrNextCellBuffer->Cells[srcIndex].Type;//FROM CHUNK_EXT TO CHUNK_SIZE
 
-                Color color = CellsVisualPropertyes::GetColorForCellType(_ptrVisualCurrentState[dstIndex]);
-
-                    _multiMesh->set_instance_custom_data(dstIndex, color);
+                Color color = CellsVisualPropertyes::GetColorForCellType(_visualCurrentState[dstIndex]);
+                _multiMesh->set_instance_custom_data(dstIndex, color);
             }
         }
     }
@@ -218,7 +214,14 @@ uint_fast16_t Chunk::GetNumberActiveCells()
     NumberOfActiveCells = 0;
     for (auto& [type, indices] : _indicesByTypeCurrent)
     {
-        NumberOfActiveCells += indices.list.size();
+        for (int i = 0; i < indices.list.size(); i++)
+        {
+            if (_ptrCurrentCellBuffer->Cells[indices.list[i]].IsActive())
+            {
+                NumberOfActiveCells++;
+            }
+        }
+        
     }
     return NumberOfActiveCells;
 }
@@ -260,9 +263,6 @@ void Chunk::SetCell(const Vector3i pos, const CellTypes type)
                 data2.list.push_back(index);
             }
         }
-        index = SIZECellFastToIndex(pos.x,pos.y,pos.z);
-        _ptrVisualInstances[index] = type;
-        _ptrVisualBuffer[index] = type;
     }
     else
     {
@@ -292,17 +292,14 @@ void Chunk::SetCell(const Vector3i pos, const CellTypes type)
             if (nextData.set.insert(index).second)
                 nextData.list.push_back(index);
         }
-        index = SIZECellFastToIndex(pos.x, pos.y, pos.z);
-        _ptrVisualInstances[index] = type;
-        _ptrVisualBuffer[index] = type;
     }
 }
 void Chunk::FillArea(
     const Vector3i& start,
     const Vector3i& end,
-    const int typeId)
+    const int CellTypeId)
 {
-    CellTypes type = static_cast<CellTypes>(typeId);
+    CellTypes type = static_cast<CellTypes>(CellTypeId);
     if ((start.x < 0) || (start.x > CHUNK_SIZE - 1) ||
         (start.y < 0) || (start.y > CHUNK_SIZE - 1) ||
         (start.z < 0) || (start.z > CHUNK_SIZE - 1))

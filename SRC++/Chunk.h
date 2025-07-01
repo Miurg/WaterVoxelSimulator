@@ -13,6 +13,7 @@
 #include "SimulationDefinitions/SimulationConst.h"
 #include "Int3.h"
 #include "CellsDefinitions/TypeIndexData.h"
+#include <CellsDefinitions/CellVisual.h>
 
 using namespace godot;
 
@@ -30,14 +31,8 @@ private:
     std::unordered_map<CellTypes, TypeIndexData> _indicesByTypeCurrent;
     std::unordered_map<CellTypes, TypeIndexData> _indicesByTypeNext;
 
-
-    CellTypes _visualInstances[CHUNK_SIZE3];
-    CellTypes _visualBuffer[CHUNK_SIZE3];
+  
     CellTypes _visualCurrentState[CHUNK_SIZE3];
-
-    CellTypes* _ptrVisualInstances = _visualInstances;
-    CellTypes* _ptrVisualBuffer = _visualBuffer;
-    CellTypes* _ptrVisualCurrentState = _visualCurrentState;
 
     uint_fast16_t NumberOfActiveCells;
 
@@ -61,15 +56,16 @@ public:
     virtual void _ready() override;
     void InitializeMultiMesh();
 
-    void UpdateDeadFromChunk(Chunk* chunk, int direction);
-    void UpdateBorderFromChunk(Chunk* chunk, int direction);
-    void StepSimulation();
+    void UpdateDeadCellsFromChunk(Chunk* chunk, int direction);
+    void UpdateBorderCellsFromChunk(Chunk* chunk, int direction);
+    void SimulationStep();
     void CommitStep();
     void UpdateVisuals();
 
     uint_fast16_t GetNumberActiveCells();
     Cell GetCellFromCurrentBuffer(uint_fast16_t Index);
     Cell GetCellFromNextBuffer(uint_fast16_t Index);
+
     void FillArea(
         const Vector3i& start,
         const Vector3i& end,

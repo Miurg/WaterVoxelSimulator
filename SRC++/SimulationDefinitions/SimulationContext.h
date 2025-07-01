@@ -9,6 +9,5 @@ struct SimulationContext {
     CellBuffer* _nextCellBuffer;
     TypeIndexData* _indicesCurrent;
     TypeIndexData* _indicesNext;
-    size_t indicesCount; 
     uint8_t randomOffset;
 };

@@ -2,15 +2,15 @@
 
 #include <cstring>
 #include "SimulationDefinitions/SimulationConst.h"
-#include "CellFlags.h"
+#include "ECellFlags.h"
 #include "CellTypes.h"
 
 struct Cell
 {
     CellTypes Type;
-    CellFlags Flags;
+    ECellFlags Flags;
 
-    Cell() : Type(CellTypes::AIR), Flags(CellFlags::NONE) {}
+    Cell() : Type(CellTypes::AIR), Flags(ECellFlags::NONE) {}
 
     bool IsAir() const
     {
@@ -19,41 +19,41 @@ struct Cell
 
     bool IsReserved() const
     {
-        return (Flags & CellFlags::RESERVED) == CellFlags::RESERVED;
+        return (Flags & ECellFlags::RESERVED) == ECellFlags::RESERVED;
     }
 
     bool IsActive() const
     {
-        return (Flags & CellFlags::ACTIVE) == CellFlags::ACTIVE;
+        return (Flags & ECellFlags::ACTIVE) == ECellFlags::ACTIVE;
     }
 
     bool IsAlreadyMove() const
     {
-        return (Flags & CellFlags::HASMOVED) == CellFlags::HASMOVED;
+        return (Flags & ECellFlags::HASMOVED) == ECellFlags::HASMOVED;
     }
 
     void SetReserved(bool value)
     {
         if (value)
-            Flags = static_cast<CellFlags>(Flags | CellFlags::RESERVED);
+            Flags = static_cast<ECellFlags>(Flags | ECellFlags::RESERVED);
         else
-            Flags = static_cast<CellFlags>(Flags & ~CellFlags::RESERVED);
+            Flags = static_cast<ECellFlags>(Flags & ~ECellFlags::RESERVED);
     }
 
     void SetAlreadyMove(bool value)
     {
         if (value)
-            Flags = static_cast<CellFlags>(Flags | CellFlags::HASMOVED);
+            Flags = static_cast<ECellFlags>(Flags | ECellFlags::HASMOVED);
         else
-            Flags = static_cast<CellFlags>(Flags & ~CellFlags::HASMOVED);
+            Flags = static_cast<ECellFlags>(Flags & ~ECellFlags::HASMOVED);
     }
 
     void SetActive(bool value)
     {
         if (value)
-            Flags = static_cast<CellFlags>(Flags | CellFlags::ACTIVE);
+            Flags = static_cast<ECellFlags>(Flags | ECellFlags::ACTIVE);
         else
-            Flags = static_cast<CellFlags>(Flags & ~CellFlags::ACTIVE);
+            Flags = static_cast<ECellFlags>(Flags & ~ECellFlags::ACTIVE);
     }
 
     void SetType(CellTypes type)
@@ -78,28 +78,28 @@ struct CellBuffer
 
     bool IsReservedAt(uint16_t index) const
     {
-        return (Cells[index].Flags & CellFlags::RESERVED) == CellFlags::RESERVED;
+        return (Cells[index].Flags & ECellFlags::RESERVED) == ECellFlags::RESERVED;
     }
 
     bool IsActiveAt(uint16_t index) const
     {
-        return (Cells[index].Flags & CellFlags::ACTIVE) == CellFlags::ACTIVE;
+        return (Cells[index].Flags & ECellFlags::ACTIVE) == ECellFlags::ACTIVE;
     }
 
     bool IsAlreadyMoveAt(uint16_t index) const
     {
-        return (Cells[index].Flags & CellFlags::HASMOVED) == CellFlags::HASMOVED;
+        return (Cells[index].Flags & ECellFlags::HASMOVED) == ECellFlags::HASMOVED;
     }
 
     void SetReservedAt(uint16_t index, bool value)
     {
         if (value)
         {
-            Cells[index].Flags = static_cast<CellFlags>(Cells[index].Flags | CellFlags::RESERVED);
+            Cells[index].Flags = static_cast<ECellFlags>(Cells[index].Flags | ECellFlags::RESERVED);
         }
         else
         {
-            Cells[index].Flags = static_cast<CellFlags>(Cells[index].Flags & ~CellFlags::RESERVED);
+            Cells[index].Flags = static_cast<ECellFlags>(Cells[index].Flags & ~ECellFlags::RESERVED);
         }
     }
 
@@ -107,11 +107,11 @@ struct CellBuffer
     {
         if (value)
         {
-            Cells[index].Flags = static_cast<CellFlags>(Cells[index].Flags | CellFlags::HASMOVED);
+            Cells[index].Flags = static_cast<ECellFlags>(Cells[index].Flags | ECellFlags::HASMOVED);
         }
         else
         {
-            Cells[index].Flags = static_cast<CellFlags>(Cells[index].Flags & ~CellFlags::HASMOVED);
+            Cells[index].Flags = static_cast<ECellFlags>(Cells[index].Flags & ~ECellFlags::HASMOVED);
         }
     }
 
@@ -119,11 +119,11 @@ struct CellBuffer
     {
         if (value)
         {
-            Cells[index].Flags = static_cast<CellFlags>(Cells[index].Flags | CellFlags::ACTIVE);
+            Cells[index].Flags = static_cast<ECellFlags>(Cells[index].Flags | ECellFlags::ACTIVE);
         }
         else
         {
-            Cells[index].Flags = static_cast<CellFlags>(Cells[index].Flags & ~CellFlags::ACTIVE);
+            Cells[index].Flags = static_cast<ECellFlags>(Cells[index].Flags & ~ECellFlags::ACTIVE);
         }
     }
 
