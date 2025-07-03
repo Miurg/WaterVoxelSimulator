@@ -13,7 +13,7 @@
 #include <godot_cpp/variant/vector3i.hpp>
 #include <SimulationDefinitions/SimulationUtils.h>
 #include <utility>
-
+#include <omp.h>
 using namespace godot;
 
 void World::_bind_methods()
@@ -47,7 +47,7 @@ void World::_ready()
     FillArea(Vector3i(0, 0, 0), Vector3i(_worldSize * CHUNK_SIZE, _worldSize * CHUNK_SIZE, _worldSize * CHUNK_SIZE), 3);
     FillArea(Vector3i(1, 1, 1), Vector3i((_worldSize * CHUNK_SIZE)-2, _worldSize * CHUNK_SIZE, (_worldSize * CHUNK_SIZE)-2), 0);
 
-    FillArea(Vector3i(4, 11, 4), Vector3i(26 + (CHUNK_SIZE * 3), 21, 26 + (CHUNK_SIZE * 3)), 2);
+    FillArea(Vector3i(4, 11, 4), Vector3i(26 + (CHUNK_SIZE * 4), 21, 26 + (CHUNK_SIZE * 4)), 2);
     GlobalSeed = 1;
     // === End of temp solution ===
 }
@@ -77,35 +77,48 @@ void World::_physics_process(double delta)
     }
     NumberOfAllCells = 0;
     auto start = std::chrono::high_resolution_clock::now(); 
-    for (auto& chunk : chunks)
-    {
-        auto pos = chunk->first;
-        for (int i = 0; i < 27; ++i)
-        {
-            if (i == 13) continue;
-            auto [dx, dy, dz] = ChunkIndexToDirection(i);
-            auto it = chunks.get(int3(pos.x + dx, pos.y + dy, pos.z + dz));
-            if (it != nullptr)
-            {
-                chunk->second->UpdateDeadCellsFromChunk((*it), i);
-            }
-        }
+    const auto numberOfNeighbors = 27; //Including ourselves
 
-        chunk->second->SimulationStep();
-        
-        for (int i = 0; i < 27; ++i)
+    for (int color = 0; color < 27; ++color)// Colors for a checkerboard-like processing
+    {
+#pragma omp parallel for
+        for (int i = 0; i < chunks.size(); ++i)
         {
-            if (i == 13) continue;
-            auto [dx, dy, dz] = ChunkIndexToDirection(i);
-            auto it = chunks.get(int3(pos.x + dx, pos.y + dy, pos.z + dz));
-            if (it != nullptr)
+            auto& chunk = chunks.sorted[i];
+            auto pos = chunk->first;
+            if (((pos.x % 3) + (pos.y % 3) * 9 + (pos.z % 3) * 3) == color) //1. Update our dead cells
             {
-                (*it)->UpdateBorderCellsFromChunk(chunk->second, InverseForChunkDirection(i));
+                for (int direction = 0; direction < numberOfNeighbors; ++direction)
+                {
+                    if (direction == 13) continue; //Exclude the direction towards ourselves
+                    auto [dx, dy, dz] = ChunkIndexToDirection(direction);
+                    auto it = chunks.get(int3(pos.x + dx, pos.y + dy, pos.z + dz));
+                    if (it != nullptr)
+                    {
+                        chunk->second->UpdateDeadCellsFromChunk((*it), direction);
+                    }
+                }
+
+                chunk->second->SimulationStep(); //2. Simulate our cells
+
+                for (int direction = 0; direction < numberOfNeighbors; ++direction) //3. Update border cells in neighbors chunks
+                {
+                    if (direction == 13) continue; //Exclude the direction towards ourselves
+                    auto [dx, dy, dz] = ChunkIndexToDirection(direction);
+                    auto it = chunks.get(int3(pos.x + dx, pos.y + dy, pos.z + dz));
+                    if (it != nullptr)
+                    {
+                        (*it)->UpdateBorderCellsFromChunk(chunk->second, InverseForChunkDirection(direction));
+                    }
+                }
             }
         }
     }
-    for (auto& chunk : chunks)
+
+#pragma omp parallel for
+    for (int i = 0; i < chunks.size(); ++i)
     {
+        auto& chunk = chunks.sorted[i];
         chunk->second->CommitStep();
         NumberOfAllCells += chunk->second->GetNumberActiveCells();
     }

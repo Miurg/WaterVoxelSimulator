@@ -13,7 +13,7 @@ class World : public Node
     GDCLASS(World, Node);
 private:
     ChunkMap chunks;
-    int _worldSize = 6;
+    int _worldSize = 10;
 
 
     uint8_t _randomOffset = 0; //For simulation
