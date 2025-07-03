@@ -1,14 +1,14 @@
 #include "CellSimulationRegistry.h"
 #include <cassert>
-#include "CellsDefinitions/CellTypes.h"
+#include "CellsDefinitions/ECellTypes.h"
 #include "Chunk.h"
-#include "LiquidMove.h"
+#include "SimulationDefinitions/CellBehaviors/LiquidMove.h"
 #include "SimulationConst.h"
 #include <xmmintrin.h>
-#include "DownMove.h"
-#include "DeactivateUnmovedCells.h"
-#include "ActivateNeighborsOfMovedCells.h"
-#include "FilterOutDeadLayerCells.h"
+#include "SimulationDefinitions/CellBehaviors/DownMove.h"
+#include "SimulationDefinitions/CellBehaviors/DeactivateUnmovedCells.h"
+#include "SimulationDefinitions/CellBehaviors/ActivateNeighborsOfMovedCells.h"
+#include "SimulationDefinitions/CellBehaviors/FilterOutDeadLayerCells.h"
 static void SimulateAir(SimulationContext& ctx) 
 {
     // ...
@@ -34,8 +34,8 @@ static void SimulateDirt(SimulationContext& ctx)
 namespace CellSimulationRegistry 
 {
 
-    static std::array<SimulateFunc, static_cast<size_t>(CellTypes::COUNT)> simulateFuncs;
-    static std::array<bool, static_cast<size_t>(CellTypes::COUNT)> isActiveFlags;
+    static std::array<SimulateFunc, static_cast<size_t>(ECellTypes::COUNT)> simulateFuncs;
+    static std::array<bool, static_cast<size_t>(ECellTypes::COUNT)> isActiveFlags;
 
     void Init() 
     {
@@ -56,14 +56,14 @@ namespace CellSimulationRegistry
         };
     }
 
-    void Simulate(CellTypes type, SimulationContext& ctx) 
+    void Simulate(ECellTypes type, SimulationContext& ctx) 
     {
         auto index = static_cast<size_t>(type);
         assert(index < simulateFuncs.size());
         simulateFuncs[index](ctx);
     }
 
-    bool IsActive(CellTypes type) 
+    bool IsActive(ECellTypes type) 
     {
         return isActiveFlags[static_cast<size_t>(type)];
     }

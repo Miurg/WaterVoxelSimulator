@@ -1,14 +1,14 @@
 #pragma once
 
 #include <cstdint>
-#include "CellsDefinitions/CellTypes.h"
+#include "CellsDefinitions/ECellTypes.h"
 
 struct CellVisual
 {
-    CellTypes Type;
+    ECellTypes Type;
 
     CellVisual()
     {
-        Type = CellTypes::AIR;
+        Type = ECellTypes::AIR;
     }
 };

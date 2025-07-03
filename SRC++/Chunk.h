@@ -28,11 +28,11 @@ private:
     CellBuffer* _ptrCurrentCellBuffer = &_currentCellBuffer;
     CellBuffer* _ptrNextCellBuffer = &_nextCellBuffer;
 
-    std::unordered_map<CellTypes, TypeIndexData> _indicesByTypeCurrent;
-    std::unordered_map<CellTypes, TypeIndexData> _indicesByTypeNext;
+    std::unordered_map<ECellTypes, TypeIndexData> _indicesByTypeCurrent;
+    std::unordered_map<ECellTypes, TypeIndexData> _indicesByTypeNext;
 
   
-    CellTypes _visualCurrentState[CHUNK_SIZE3];
+    ECellTypes _visualCurrentState[CHUNK_SIZE3];
 
     uint_fast16_t NumberOfActiveCells;
 
@@ -44,7 +44,7 @@ private:
     MultiMeshInstance3D* _multiMeshInstance;
     Ref<Mesh> _cellMesh;
 
-    void SetCell(const Vector3i pos, const CellTypes type);
+    void SetCell(const Vector3i pos, const ECellTypes type);
 public:
     void Initialize(int3 position, int seed);
     int ChunkSeed;

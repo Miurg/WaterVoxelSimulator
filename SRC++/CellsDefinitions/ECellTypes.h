@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-enum class CellTypes : uint8_t 
+enum class ECellTypes : uint8_t 
 {
     AIR = 0,
     SAND = 1,

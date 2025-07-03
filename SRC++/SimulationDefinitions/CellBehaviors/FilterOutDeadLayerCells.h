@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SimulationContext.h"
+#include "SimulationDefinitions/SimulationContext.h"
 #include "CellsDefinitions/CellBuffer.h"
 
 namespace FilterOutDeadLayerCells

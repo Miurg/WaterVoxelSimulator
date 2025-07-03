@@ -1,12 +1,12 @@
 #pragma once
 
-#include "CellsDefinitions/CellTypes.h"
-#include "SimulationContext.h"
+#include "CellsDefinitions/ECellTypes.h"
+#include "SimulationDefinitions/SimulationContext.h"
 #include <array>
 #include <chrono>
-#include "CellSimulationRegistry.h"
+#include "SimulationDefinitions/CellSimulationRegistry.h"
 #include <cassert>
-#include "SimulationConst.h"
+#include "SimulationDefinitions/SimulationConst.h"
 #include "Chunk.h"
 
 namespace LiquidMove 

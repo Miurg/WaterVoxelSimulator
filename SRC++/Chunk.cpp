@@ -6,7 +6,7 @@
 #include <CellsDefinitions/CellsVisualPropertyes.h>
 #include <godot_cpp/classes/plane_mesh.hpp>
 #include <utility>
-#include "CellsDefinitions/CellTypes.h"
+#include "CellsDefinitions/ECellTypes.h"
 #include "SimulationDefinitions/SimulationContext.h"
 #include "SimulationDefinitions/CellSimulationRegistry.h"
 #include <iostream>
@@ -237,7 +237,7 @@ Cell Chunk::GetCellFromNextBuffer(uint_fast16_t Index)
     return _ptrNextCellBuffer->Cells[Index];
 }
 
-void Chunk::SetCell(const Vector3i pos, const CellTypes type)
+void Chunk::SetCell(const Vector3i pos, const ECellTypes type)
 {
     //We do not take into account the layer of dead cells to install new cells, so +1 for start
     uint_fast16_t index = EXTCellVectorToIndex(Vector3i(pos.x+1,pos.y+1,pos.z+1)); 
@@ -300,7 +300,7 @@ void Chunk::FillArea(
     const Vector3i& end,
     const int CellTypeId)
 {
-    CellTypes type = static_cast<CellTypes>(CellTypeId);
+    ECellTypes type = static_cast<ECellTypes>(CellTypeId);
     if ((start.x < 0) || (start.x > CHUNK_SIZE - 1) ||
         (start.y < 0) || (start.y > CHUNK_SIZE - 1) ||
         (start.z < 0) || (start.z > CHUNK_SIZE - 1))

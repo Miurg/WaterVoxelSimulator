@@ -7,7 +7,7 @@
 #include <CellsDefinitions/CellsVisualPropertyes.h>
 #include <godot_cpp/classes/plane_mesh.hpp>
 #include <utility>
-#include "CellsDefinitions/CellTypes.h"
+#include "CellsDefinitions/ECellTypes.h"
 #include "SimulationDefinitions/SimulationContext.h"
 #include "SimulationDefinitions/CellSimulationRegistry.h"
 #include <iostream>
@@ -69,7 +69,7 @@ void World::_ready()
     //        }
     //    }
     //}
-    FillArea(Vector3i(4, 11, 4), Vector3i(26 + (CHUNK_SIZE * 3), 21, 26 + (CHUNK_SIZE * 3)), 2);
+    FillArea(Vector3i(4, 11, 4), Vector3i(26 + (CHUNK_SIZE * 4), 21, 26 + (CHUNK_SIZE * 4)), 2);
     GlobalSeed = 1;
 }
 int NumberOfAllCells;

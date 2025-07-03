@@ -3,18 +3,18 @@
 #include <cstring>
 #include "SimulationDefinitions/SimulationConst.h"
 #include "ECellFlags.h"
-#include "CellTypes.h"
+#include "ECellTypes.h"
 
 struct Cell
 {
-    CellTypes Type;
+    ECellTypes Type;
     ECellFlags Flags;
 
-    Cell() : Type(CellTypes::AIR), Flags(ECellFlags::NONE) {}
+    Cell() : Type(ECellTypes::AIR), Flags(ECellFlags::NONE) {}
 
     bool IsAir() const
     {
-        return Type == CellTypes::AIR;
+        return Type == ECellTypes::AIR;
     }
 
     bool IsReserved() const
@@ -56,7 +56,7 @@ struct Cell
             Flags = static_cast<ECellFlags>(Flags & ~ECellFlags::ACTIVE);
     }
 
-    void SetType(CellTypes type)
+    void SetType(ECellTypes type)
     {
         Type = type;
     }
@@ -73,7 +73,7 @@ struct CellBuffer
 
     bool IsAirAt(uint16_t index) const
     {
-        return Cells[index].Type == CellTypes::AIR;
+        return Cells[index].Type == ECellTypes::AIR;
     }
 
     bool IsReservedAt(uint16_t index) const
@@ -127,7 +127,7 @@ struct CellBuffer
         }
     }
 
-    void SetTypeAt(uint16_t index, CellTypes type)
+    void SetTypeAt(uint16_t index, ECellTypes type)
     {
         if (index < CHUNK_EXT3)
         {

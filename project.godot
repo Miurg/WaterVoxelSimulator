@@ -19,6 +19,6 @@ config/icon="res://icon.svg"
 
 project/assembly_name="VoxelParticleSimulator"
 
-[physics]
+[rendering]
 
-common/physics_ticks_per_second=25
+anti_aliasing/screen_space_roughness_limiter/enabled=false
