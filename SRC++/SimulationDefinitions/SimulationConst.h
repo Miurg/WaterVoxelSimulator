@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <vector>
-#include <godot_cpp/variant/vector3i.hpp>
 #include <array>
 
 //=== Chunk Size Configuration ===

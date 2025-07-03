@@ -1,27 +1,18 @@
-#include "World.h"
 #include "Chunk.h"
 #include "SimulationDefinitions/SimulationConst.h"
+#include "World.h"
+#include <algorithm>
+#include <chrono>
+#include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/node3d.hpp>
+#include <godot_cpp/classes/packed_scene.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>    
-#include <CellsDefinitions/CellsVisualPropertyes.h>
-#include <godot_cpp/classes/plane_mesh.hpp>
-#include <utility>
-#include "CellsDefinitions/ECellTypes.h"
-#include "SimulationDefinitions/SimulationContext.h"
-#include "SimulationDefinitions/CellSimulationRegistry.h"
-#include <iostream>
-#include <chrono>
-#include <mmintrin.h> 
-#include <xmmintrin.h>
-#include <algorithm>
-#include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/variant/vector3i.hpp>
-#include <godot_cpp/templates/hash_map.hpp>
-#include <godot_cpp/classes/packed_scene.hpp>
-#include <godot_cpp/classes/resource_loader.hpp>
-#include <godot_cpp/classes/engine.hpp>
 #include <SimulationDefinitions/SimulationUtils.h>
+#include <utility>
 
 using namespace godot;
 
@@ -42,6 +33,7 @@ void World::_ready()
     {
         return; 
     }
+    //=== Temp solution for world generation ==
     int temp = 0;
     for (int i = 0; i < _worldSize; ++i)
     {
@@ -55,22 +47,9 @@ void World::_ready()
     FillArea(Vector3i(0, 0, 0), Vector3i(_worldSize * CHUNK_SIZE, _worldSize * CHUNK_SIZE, _worldSize * CHUNK_SIZE), 3);
     FillArea(Vector3i(1, 1, 1), Vector3i((_worldSize * CHUNK_SIZE)-2, _worldSize * CHUNK_SIZE, (_worldSize * CHUNK_SIZE)-2), 0);
 
-    //for (auto& chunk : chunks)
-    //{
-    //    auto pos = chunk->first;
-    //    for (int i = 0; i < 27; ++i)
-    //    {
-    //        if (i == 13) continue;
-    //        auto [dx, dy, dz] = ChunkIndexToDirection(i);
-    //        auto it = chunks.get(int3(pos.x + dx, pos.y + dy, pos.z + dz));
-    //        if (it != nullptr)
-    //        {
-    //            chunk->second->UpdateDeadFromChunk((*it), i);
-    //        }
-    //    }
-    //}
-    FillArea(Vector3i(4, 11, 4), Vector3i(26 + (CHUNK_SIZE * 4), 21, 26 + (CHUNK_SIZE * 4)), 2);
+    FillArea(Vector3i(4, 11, 4), Vector3i(26 + (CHUNK_SIZE * 3), 21, 26 + (CHUNK_SIZE * 3)), 2);
     GlobalSeed = 1;
+    // === End of temp solution ===
 }
 int NumberOfAllCells;
 void World::_process(double delta)
@@ -81,10 +60,12 @@ void World::_process(double delta)
     }
     std::scoped_lock lock(_visualMutex);
     if (!_haveUpdateForVisual) return;
+
     for (auto& chunk : chunks)
     {
         chunk->second->UpdateVisuals();
     }
+
     _haveUpdateForVisual = false;
 }
 
@@ -94,10 +75,8 @@ void World::_physics_process(double delta)
     {
         return;
     }
-    simulateStepCount++;
     NumberOfAllCells = 0;
     auto start = std::chrono::high_resolution_clock::now(); 
-    
     for (auto& chunk : chunks)
     {
         auto pos = chunk->first;
@@ -137,6 +116,7 @@ void World::_physics_process(double delta)
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration = end - start;
     physicIteration = duration.count();
+    simulateStepCount++;
 
     UtilityFunctions::print("Chunk Simulation time: ", physicIteration);
     UtilityFunctions::print("Number of all cells: ", NumberOfAllCells);

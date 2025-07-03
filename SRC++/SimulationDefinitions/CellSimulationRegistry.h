@@ -2,7 +2,6 @@
 
 #include "CellsDefinitions/ECellTypes.h"
 #include "SimulationContext.h"
-#include <array>
 
 namespace CellSimulationRegistry 
 {

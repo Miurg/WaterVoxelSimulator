@@ -1,10 +1,7 @@
 #include "CellSimulationRegistry.h"
 #include <cassert>
 #include "CellsDefinitions/ECellTypes.h"
-#include "Chunk.h"
 #include "SimulationDefinitions/CellBehaviors/LiquidMove.h"
-#include "SimulationConst.h"
-#include <xmmintrin.h>
 #include "SimulationDefinitions/CellBehaviors/DownMove.h"
 #include "SimulationDefinitions/CellBehaviors/DeactivateUnmovedCells.h"
 #include "SimulationDefinitions/CellBehaviors/ActivateNeighborsOfMovedCells.h"

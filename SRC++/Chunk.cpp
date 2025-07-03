@@ -4,19 +4,13 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>    
 #include <CellsDefinitions/CellsVisualPropertyes.h>
-#include <godot_cpp/classes/plane_mesh.hpp>
 #include <utility>
 #include "CellsDefinitions/ECellTypes.h"
 #include "SimulationDefinitions/SimulationContext.h"
 #include "SimulationDefinitions/CellSimulationRegistry.h"
-#include <iostream>
-#include <chrono>
-#include <mmintrin.h> 
-#include <xmmintrin.h>
 #include <algorithm>
 #include <random>
 #include <SimulationDefinitions/SimulationUtils.h>
-#include <World.h>
 
 using namespace godot;
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include "CellsDefinitions/ECellTypes.h"
 
 struct CellVisual

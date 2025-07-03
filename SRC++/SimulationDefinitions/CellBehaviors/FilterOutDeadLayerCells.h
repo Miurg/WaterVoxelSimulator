@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SimulationDefinitions/SimulationContext.h"
-#include "CellsDefinitions/CellBuffer.h"
+#include <CellsDefinitions/TypeIndexData.h>
 
 namespace FilterOutDeadLayerCells
 {

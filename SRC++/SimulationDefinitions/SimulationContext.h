@@ -1,8 +1,7 @@
 #pragma once
 
 #include "CellsDefinitions/CellBuffer.h"
-#include <vector>
-#include "Chunk.h"
+#include <CellsDefinitions/TypeIndexData.h>
 
 struct SimulationContext 
 {
