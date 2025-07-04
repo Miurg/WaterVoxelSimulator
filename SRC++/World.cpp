@@ -47,7 +47,7 @@ void World::_ready()
     FillArea(Vector3i(0, 0, 0), Vector3i(_worldSize * CHUNK_SIZE, _worldSize * CHUNK_SIZE, _worldSize * CHUNK_SIZE), 3);
     FillArea(Vector3i(1, 1, 1), Vector3i((_worldSize * CHUNK_SIZE)-2, _worldSize * CHUNK_SIZE, (_worldSize * CHUNK_SIZE)-2), 0);
 
-    FillArea(Vector3i(4, 11, 4), Vector3i(26 + (CHUNK_SIZE * 4), 21, 26 + (CHUNK_SIZE * 4)), 2);
+    FillArea(Vector3i((_worldSize * CHUNK_SIZE) /4, 9, (_worldSize * CHUNK_SIZE) / 4), Vector3i((_worldSize * CHUNK_SIZE) / 4+ (_worldSize * CHUNK_SIZE) / 2, 18, (_worldSize * CHUNK_SIZE) / 4+ (_worldSize * CHUNK_SIZE) / 2), 2);
     GlobalSeed = 1;
     // === End of temp solution ===
 }
@@ -76,19 +76,27 @@ void World::_physics_process(double delta)
         return;
     }
     NumberOfAllCells = 0;
-    auto start = std::chrono::high_resolution_clock::now(); 
-    const auto numberOfNeighbors = 27; //Including ourselves
+    auto start = std::chrono::high_resolution_clock::now();
 
-    for (int color = 0; color < 27; ++color)// Colors for a checkerboard-like processing
+    const auto numberOfNeighbors = 27; //Including ourselves
+    int color[numberOfNeighbors]; //Colors for a checkerboard-like processing
+    for (int temp = 0; temp < numberOfNeighbors-1; ++temp)
     {
+        color[temp] = temp;
+    }
+    std::mt19937 rng(rd());
+    std::shuffle(color, color + (sizeof(color) / sizeof(color[0])), rng);
+    for (int i = 0; i < numberOfNeighbors-1; ++i)
+    {
+        int colorTemp = color[i];
 #pragma omp parallel for
-        for (int i = 0; i < chunks.size(); ++i)
+        for (int j = 0; j < chunks.size(); ++j)
         {
-            auto& chunk = chunks.sorted[i];
+            auto& chunk = chunks.sorted[j];
             auto pos = chunk->first;
-            if (((pos.x % 3) + (pos.y % 3) * 9 + (pos.z % 3) * 3) == color) //1. Update our dead cells
+            if (((pos.x % 3) + (pos.y % 3) * 9 + (pos.z % 3) * 3) == colorTemp) //1. Update our dead cells
             {
-                for (int direction = 0; direction < numberOfNeighbors; ++direction)
+                for (int direction = 0; direction < numberOfNeighbors-1; ++direction)
                 {
                     if (direction == 13) continue; //Exclude the direction towards ourselves
                     auto [dx, dy, dz] = ChunkIndexToDirection(direction);
@@ -101,7 +109,7 @@ void World::_physics_process(double delta)
 
                 chunk->second->SimulationStep(); //2. Simulate our cells
 
-                for (int direction = 0; direction < numberOfNeighbors; ++direction) //3. Update border cells in neighbors chunks
+                for (int direction = 0; direction < numberOfNeighbors-1; ++direction) //3. Update border cells in neighbors chunks
                 {
                     if (direction == 13) continue; //Exclude the direction towards ourselves
                     auto [dx, dy, dz] = ChunkIndexToDirection(direction);
@@ -114,6 +122,7 @@ void World::_physics_process(double delta)
             }
         }
     }
+    forward = !forward;
 
 #pragma omp parallel for
     for (int i = 0; i < chunks.size(); ++i)
@@ -121,8 +130,8 @@ void World::_physics_process(double delta)
         auto& chunk = chunks.sorted[i];
         chunk->second->CommitStep();
         NumberOfAllCells += chunk->second->GetNumberActiveCells();
+        chunk->second->ChunkSeed++;
     }
-
     std::scoped_lock lock(_visualMutex);
     _haveUpdateForVisual = true;
 

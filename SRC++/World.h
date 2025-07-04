@@ -5,6 +5,7 @@
 #include <godot_cpp/variant/vector3i.hpp>
 #include "Int3.h"
 #include "SimulationDefinitions/ChunkMap.h"
+#include <random>
 
 using namespace godot;
 
@@ -14,7 +15,7 @@ class World : public Node
 private:
     ChunkMap chunks;
     int _worldSize = 10;
-
+    std::random_device rd;
 
     uint8_t _randomOffset = 0; //For simulation
 
@@ -22,7 +23,7 @@ private:
 
     std::mutex _visualMutex;
     bool _haveUpdateForVisual;
-
+    bool forward = true;
 public:    
     int GlobalSeed;
     double physicIteration = 0;
