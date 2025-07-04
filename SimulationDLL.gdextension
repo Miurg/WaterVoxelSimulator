@@ -5,5 +5,5 @@ compatibility_minimum = "4.1"
 reloadable = true
 
 [libraries]
-windows.debug.x86_64 = "res://Extension/MyGDExtension.dll"
-windows.release.x86_64 = "res://Extension/MyGDExtension.dll"
+windows.debug.x86_64 = "res://Extension/VoxelSimulation.dll"
+windows.release.x86_64 = "res://Extension/VoxelSimulation.dll"
