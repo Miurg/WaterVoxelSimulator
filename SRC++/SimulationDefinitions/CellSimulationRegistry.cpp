@@ -6,15 +6,25 @@
 #include "SimulationDefinitions/CellBehaviors/DeactivateUnmovedCells.h"
 #include "SimulationDefinitions/CellBehaviors/ActivateNeighborsOfMovedCells.h"
 #include "SimulationDefinitions/CellBehaviors/FilterOutDeadLayerCells.h"
+#include "SimulationDefinitions/CellBehaviors/GatherActiveCellIndices.h"
+
+#include "SimulationDefinitions/CellBehaviors/PredetermentMove.h"
+
 static void SimulateAir(SimulationContext& ctx) 
 {
     // ...
 }
 static void SimulateWater(SimulationContext& ctx) 
 {
+    //=== Preprocess ===
+    GatherActiveCellIndices::Simulate(ctx);
+
+    //=== Main behavior ===
     DownMove::Simulate(ctx);
+    PredetermentMove::Simulate(ctx);
     LiquidMove::Simulate(ctx);
 
+    //=== Postprocess ===
     DeactivateUnmovedCells::Simulate(ctx);
     ActivateNeighborsOfMovedCells::Simulate(ctx);
     FilterOutDeadLayerCells::Simulate(ctx);
@@ -24,10 +34,12 @@ static void SimulateSand(SimulationContext& ctx)
 {
 
 }
+
 static void SimulateDirt(SimulationContext& ctx) 
 {
 
 }
+
 namespace CellSimulationRegistry 
 {
 

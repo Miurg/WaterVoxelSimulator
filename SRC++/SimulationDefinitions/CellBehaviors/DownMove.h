@@ -7,25 +7,25 @@ namespace DownMove
 {
     inline void Simulate(SimulationContext& ctx)
     {
-        for (uint_fast16_t index = 0; index < ctx._indicesCurrent->list.size(); ++index)
+        for (uint_fast16_t index = 0; index < ctx.indicesActiveCurrent.size(); ++index)
         {
-            uint_fast16_t currentIndex = ctx._indicesCurrent->list[index];
-            Cell currentCell = ctx._currentCellBuffer->Cells[currentIndex];
+            uint_fast16_t currentIndex = ctx.indicesActiveCurrent[index];
+            Cell currentCell = ctx.currentCellBuffer->Cells[currentIndex];
 
             if (!currentCell.IsActive() || currentCell.IsAlreadyMove()) continue;
 
             uint_fast16_t belowIndex = currentIndex - CHUNK_EXT;
-            Cell belowCell = ctx._currentCellBuffer->Cells[belowIndex];
+            Cell belowCell = ctx.currentCellBuffer->Cells[belowIndex];
 
             if (!belowCell.IsAir() || belowCell.IsReserved()) continue;
 
-            ctx._nextCellBuffer->Cells[belowIndex] = currentCell;
-            ctx._nextCellBuffer->Cells[currentIndex] = belowCell;
-            ctx._indicesNext->list[index] = belowIndex;
-            ctx._indicesNext->set.erase(currentIndex);
-            ctx._indicesNext->set.insert(belowIndex);
-            ctx._currentCellBuffer->Cells[belowIndex].SetReserved(true);
-            ctx._currentCellBuffer->Cells[currentIndex].SetAlreadyMove(true);
+            ctx.nextCellBuffer->Cells[belowIndex] = currentCell;
+            ctx.nextCellBuffer->Cells[currentIndex] = belowCell;
+            ctx.indicesNext->list[ctx.activeIndicesInIndicesCurrent[index]] = belowIndex;
+            ctx.indicesNext->set.erase(currentIndex);
+            ctx.indicesNext->set.insert(belowIndex);
+            ctx.currentCellBuffer->Cells[belowIndex].SetReserved(true);
+            ctx.currentCellBuffer->Cells[currentIndex].SetAlreadyMove(true);
         }
     }
 }

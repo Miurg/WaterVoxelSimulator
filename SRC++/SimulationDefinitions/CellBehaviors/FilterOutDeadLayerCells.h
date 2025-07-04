@@ -7,7 +7,7 @@ namespace FilterOutDeadLayerCells
 {
     inline void Simulate(SimulationContext& ctx)
     {
-        TypeIndexData& data = *ctx._indicesNext;
+        TypeIndexData& data = *ctx.indicesNext;
         auto& vec = data.list;
         auto& set = data.set;
         uint_fast16_t writeIndex = 0;

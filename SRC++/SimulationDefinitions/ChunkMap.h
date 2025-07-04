@@ -21,7 +21,6 @@ public:
         auto it = map.find(key);
         if (it == map.end()) return false;
 
-        // удаляем итератор из sorted
         sorted.erase(std::remove_if(sorted.begin(), sorted.end(),
             [&](auto& ptr) { return ptr->first == key; }), sorted.end());
 

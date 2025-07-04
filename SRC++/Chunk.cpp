@@ -143,24 +143,24 @@ void Chunk::UpdateBorderCellsFromChunk(Chunk* chunk, int direction)
 void Chunk::SimulationStep()
 {
     SimulationContext ctx = SimulationContext();
-    ctx._currentCellBuffer = _ptrCurrentCellBuffer;
-    ctx._nextCellBuffer = _ptrNextCellBuffer;
+    ctx.currentCellBuffer = _ptrCurrentCellBuffer;
+    ctx.nextCellBuffer = _ptrNextCellBuffer;
                
     std::mt19937 gen(ChunkSeed);
-    std::uniform_int_distribution<> dist(0, 4); 
-    int random_index = dist(gen);
-    ctx.randomOffset = random_index;
+    std::uniform_int_distribution<> dist(0, 5000); 
+    ctx.gen = gen;
+    ctx.dist = dist;
 
     for (auto &[type, indices] : _indicesByTypeCurrent)
     {
-        ctx._indicesCurrent = &indices;
+        ctx.indicesCurrent = &indices;
         auto itNext = _indicesByTypeNext.find(type);
         if (itNext != _indicesByTypeNext.end()) 
         {
-            ctx._indicesNext = &(itNext->second);
+            ctx.indicesNext = &(itNext->second);
         }
         CellSimulationRegistry::Simulate(type, ctx);
-        std::reverse(itNext->second.list.begin(), itNext->second.list.end());
+        std::shuffle(itNext->second.list.begin(), itNext->second.list.end(), gen);
     }
 }
 
