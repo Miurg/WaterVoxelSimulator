@@ -2,7 +2,6 @@
 #include <cassert>
 #include "CellsDefinitions/ECellTypes.h"
 #include "SimulationDefinitions/CellBehaviors/MoveCells.h"
-#include "SimulationDefinitions/CellBehaviors/DownMove.h"
 #include "SimulationDefinitions/CellBehaviors/DeactivateUnmovedCells.h"
 #include "SimulationDefinitions/CellBehaviors/ActivateNeighborsOfMovedCells.h"
 #include "SimulationDefinitions/CellBehaviors/FilterOutDeadLayerCells.h"
