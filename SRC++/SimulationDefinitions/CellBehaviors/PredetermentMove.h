@@ -5,8 +5,6 @@
 
 namespace PredetermentMove
 {
-    static constexpr int _offsets[4] = { 1, -1, CHUNK_EXT2, -CHUNK_EXT2 };//dx,dz
-
     inline void Simulate(SimulationContext& ctx)
     {
         for (uint_fast16_t index = 0; index < ctx.indicesActiveCurrent.size(); ++index)
@@ -16,7 +14,7 @@ namespace PredetermentMove
 
             if (!currentCell.IsActive() || currentCell.IsAlreadyMove()) continue;
 
-            uint_fast16_t offsetByDirection = _offsets[static_cast<uint8_t>(GetDirection(currentCell.Flags))];
+            uint_fast16_t offsetByDirection = OffsetsForDirections18[static_cast<uint8_t>(GetDirection(currentCell.Flags))];
             uint_fast16_t targetIndex = currentIndex + offsetByDirection;
             Cell predetermentCell = ctx.currentCellBuffer->Cells[targetIndex];
 

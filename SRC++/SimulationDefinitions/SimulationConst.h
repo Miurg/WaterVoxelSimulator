@@ -5,14 +5,14 @@
 #include <array>
 
 //=== Chunk Size Configuration ===
-static constexpr uint_fast16_t  CHUNK_SIZE = 32;
-static constexpr uint_fast16_t  CHUNK_SIZE2 = CHUNK_SIZE * CHUNK_SIZE;
-static constexpr uint_fast16_t  CHUNK_SIZE3 = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
+static constexpr int_fast16_t  CHUNK_SIZE = 32;
+static constexpr int_fast16_t  CHUNK_SIZE2 = CHUNK_SIZE * CHUNK_SIZE;
+static constexpr int_fast16_t  CHUNK_SIZE3 = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
 
 //Extended chunk size (with dead cell layers)
-static constexpr uint_fast16_t  CHUNK_EXT = CHUNK_SIZE + 2; //One layer from each side for dead cells
-static constexpr uint_fast16_t  CHUNK_EXT2 = CHUNK_EXT * CHUNK_EXT;
-static constexpr uint_fast16_t  CHUNK_EXT3 = CHUNK_EXT * CHUNK_EXT * CHUNK_EXT;
+static constexpr int_fast16_t  CHUNK_EXT = CHUNK_SIZE + 2; //One layer from each side for dead cells
+static constexpr int_fast16_t  CHUNK_EXT2 = CHUNK_EXT * CHUNK_EXT;
+static constexpr int_fast16_t  CHUNK_EXT3 = CHUNK_EXT * CHUNK_EXT * CHUNK_EXT;
 
 //=== Bit manipulation helpers ===
 static constexpr uint8_t SIZE_LOG2 = []() 
@@ -69,3 +69,24 @@ extern std::array<BoundaryIndices, 27> boundaryPairs;
 extern BorderLayerMaskInitializer borderLayerMaskInitializer;
 extern DeadLayerMaskInitializer deadLayerMaskInitializer;
 extern BondaryIndicesInitializer bondaryIndicesInitializer;
+
+//Static for direction
+static constexpr int OffsetsForDirections18[18] = 
+{
+    1, -1,                       // +z, -z
+    CHUNK_EXT2, -CHUNK_EXT2,     // +x, -x
+    CHUNK_EXT, -CHUNK_EXT,       // +y, -y
+
+    CHUNK_EXT + 1,               // +y +z
+    CHUNK_EXT - 1,               // +y -z
+    -CHUNK_EXT + 1,              // -y +z
+    -CHUNK_EXT - 1,              // -y -z
+    CHUNK_EXT2 + 1,              // +x +z
+    CHUNK_EXT2 - 1,              // +x -z
+    -CHUNK_EXT2 + 1,             // -x +z
+    -CHUNK_EXT2 - 1,             // -x -z
+    CHUNK_EXT2 + CHUNK_EXT,      // +x +y
+    CHUNK_EXT2 - CHUNK_EXT,      // +x -y
+    -CHUNK_EXT2 + CHUNK_EXT,     // -x +y
+    -CHUNK_EXT2 - CHUNK_EXT     // -x -y
+};

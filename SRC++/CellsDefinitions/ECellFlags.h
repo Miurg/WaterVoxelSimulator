@@ -8,18 +8,34 @@ enum class ECellFlags : uint8_t
     RESERVED = 1 << 0,  //00000001
     ACTIVE = 1 << 1,    //00000010
     HASMOVED = 1 << 2   //00000100
-    //Direction stores in bits 3 and 4 (00011000)
+    //Direction stores in (11111000)
 };
 
-constexpr uint8_t DIRECTION_MASK = 0b00011000; 
+constexpr uint8_t DIRECTION_MASK = 0b11111000; 
 constexpr uint8_t DIRECTION_SHIFT = 3;
 
 enum class EDirection : uint8_t
 {
-    Right = 0,
-    Left = 1,
-    Forward = 2,
-    Backward = 3
+    RIGHT,
+    LEFT,
+    FORWARD,
+    BACKWARD,
+    UP,
+    DOWN,
+
+    UP_RIGHT,
+    UP_LEFT,
+    DOWN_RIGHT,
+    DOWN_LEFT,
+    FORWARD_RIGHT,
+    FORWARD_LEFT,
+    BACKWARD_RIGHT,
+    BACKWARD_LEFT,
+    UP_FORWARD,
+    UP_BACKWARD,
+    DOWN_FORWARD,
+    DOWN_BACKWARD
+    // 6 + 12 = 18
 };
 
 inline void SetDirection(ECellFlags& flag, EDirection dir)

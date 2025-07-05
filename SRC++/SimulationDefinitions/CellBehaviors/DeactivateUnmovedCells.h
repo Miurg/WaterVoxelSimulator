@@ -15,7 +15,9 @@ namespace DeactivateUnmovedCells
             if (currentCell.IsAlreadyMove() || !currentCell.IsActive()) continue;
 
             currentCell.SetActive(false);
+            SetDirection(currentCell.Flags, static_cast<EDirection>(EDirection::DOWN));
             ctx.nextCellBuffer->Cells[currentIndex] = currentCell;
+
         }
 	}
 }

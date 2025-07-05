@@ -1,7 +1,7 @@
 #include "CellSimulationRegistry.h"
 #include <cassert>
 #include "CellsDefinitions/ECellTypes.h"
-#include "SimulationDefinitions/CellBehaviors/LiquidMove.h"
+#include "SimulationDefinitions/CellBehaviors/MoveCells.h"
 #include "SimulationDefinitions/CellBehaviors/DownMove.h"
 #include "SimulationDefinitions/CellBehaviors/DeactivateUnmovedCells.h"
 #include "SimulationDefinitions/CellBehaviors/ActivateNeighborsOfMovedCells.h"
@@ -20,9 +20,23 @@ static void SimulateWater(SimulationContext& ctx)
     GatherActiveCellIndices::Simulate(ctx);
 
     //=== Main behavior ===
-    DownMove::Simulate(ctx);
+    std::vector<EDirection> directions;
+    directions.push_back(EDirection::DOWN);
+
+    MoveCells::Simulate(ctx, directions, false);
     PredetermentMove::Simulate(ctx);
-    LiquidMove::Simulate(ctx);
+
+    directions.clear();
+    directions.push_back(EDirection::BACKWARD);
+    directions.push_back(EDirection::FORWARD);
+    directions.push_back(EDirection::LEFT);
+    directions.push_back(EDirection::RIGHT);
+    directions.push_back(EDirection::BACKWARD_LEFT);
+    directions.push_back(EDirection::BACKWARD_RIGHT);
+    directions.push_back(EDirection::FORWARD_LEFT);
+    directions.push_back(EDirection::FORWARD_RIGHT);
+
+    MoveCells::Simulate(ctx, directions, true);
 
     //=== Postprocess ===
     DeactivateUnmovedCells::Simulate(ctx);
