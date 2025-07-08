@@ -10,7 +10,7 @@ void vertex()
 
 void fragment()
 {
-	if (instance_color.a < 0.01)
+	if (instance_color.a < 0.1)
 	{
         discard;
     }

@@ -19,6 +19,13 @@ config/icon="res://icon.svg"
 
 project/assembly_name="VoxelParticleSimulator"
 
+[input]
+
+W={
+"deadzone": 0.2,
+"events": []
+}
+
 [rendering]
 
 anti_aliasing/screen_space_roughness_limiter/enabled=false
